@@ -1,4 +1,7 @@
 const named_code = require('./named_code.js').named_code;
+const data_structure = require('./data_structure.js').data_structure;
+
+const util = require('util');
 
 exports.trans_section = class {
 	constructor(ts) {
@@ -13,8 +16,8 @@ exports.trans_section = class {
 		if( -1 != line.indexOf("xfs-sst-js")) {
 			var spos = line.indexOf("{");
 			var epos = line.lastIndexOf("}")+1;
-			var markup = JSON.parse(line.slice(spos, epos));
-			console.log(markup);
+			var markup = eval(util.format("Object(%s)", line.slice(spos, epos)));
+			//console.log(markup);
 
 			if(!this.started) {
 				this.started = true;
@@ -22,13 +25,20 @@ exports.trans_section = class {
 				this.lines = [];
 			}
 			else {
-				console.assert(markup.name == "end");
+				if(markup.name != "end") {
+					this.lines.push(line);
+					return;;
+				}
+
 				this.started = false;	
 				//console.log(this);
 				if(this.markup.name == "nc") {
 					return new named_code(this);
 				}
-				return ;
+				else if(this.markup.name == "data") {
+					return new data_structure(this);
+				}
+				return;
 			}
 		}
 		else {

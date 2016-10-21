@@ -27,7 +27,11 @@ exports.named_code = class {
 		}
 	}
 
-	generate() {
+	generate(gs, run) {
+		if(run != "nc") {
+			return ;
+		}
+
 		var result = util.format("#define List%s(expr) \\n\n", this.codeName);
 		this.codes.map((code)=>{
 			result += util.format("\texpr(%s)\\n\n", code);

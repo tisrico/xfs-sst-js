@@ -51,7 +51,7 @@ typedef XFSBLOCKINGHOOK * LPXFSBLOCKINGHOOK;
 
 #define WFSDDESCRIPTION_LEN                     256
 #define WFSDSYSSTATUS_LEN                       256
-// xfs-sst-js:{"name":"nc", "bitwise":false, "applies":["WFSDEVSTATUS.fwState"], "codeName":"XfsDevStatus"}
+// xfs-sst-js:{name:"nc", bitwise:false, applies:["WFSDEVSTATUS.fwState"], codeName:"XfsDevStatus"}
 /****** Values of WFSDEVSTATUS.fwState **********************************/
 
 #define WFS_STAT_DEVONLINE                      (0)
@@ -61,85 +61,99 @@ typedef XFSBLOCKINGHOOK * LPXFSBLOCKINGHOOK;
 #define WFS_STAT_DEVHWERROR                     (4)
 #define WFS_STAT_DEVUSERERROR                   (5)
 #define WFS_STAT_DEVBUSY                        (6)
-// xfs-sst-js:{"name":"end"}
+// xfs-sst-js:{name:"end"}
 /****** Value of WFS_DEFAULT_HAPP ***************************************/
 
 #define WFS_DEFAULT_HAPP                        (0)
 
 /****** Data Structures *************************************************/
 
+// xfs-sst-js:{name:"data", type: "WFSRESULT", codeName: "XfsResult", leading:3}
 typedef struct _wfs_result
 {
-    REQUESTID       RequestID;
-    HSERVICE        hService;
-    SYSTEMTIME      tsTimestamp;
-    HRESULT         hResult;
+    REQUESTID       RequestID;								// xfs-sst-js:{name:"data.field"}
+    HSERVICE        hService;                               // xfs-sst-js:{name:"data.field"}
+    SYSTEMTIME      tsTimestamp;                            // xfs-sst-js:{name:"data.field"}
+    HRESULT         hResult;                                // xfs-sst-js:{name:"data.field"}
     union {
-        DWORD       dwCommandCode;
-        DWORD       dwEventID;
+        DWORD       dwCommandCode;							// xfs-sst-js:{name:"data.field", scope:"u"}
+        DWORD       dwEventID;                              // xfs-sst-js:{name:"data.field", scope:"u"}
     } u;
-    LPVOID          lpBuffer;
+    LPVOID          lpBuffer;                               // xfs-sst-js:{name:"data.field"}
 } WFSRESULT, * LPWFSRESULT;
+// xfs-sst-js:{name:"end"}
 
+// xfs-sst-js:{name:"data", type: "WFSVERSION", codeName: "XfsVersion", leading:3}
 typedef struct _wfsversion
 {
-    WORD            wVersion;
-    WORD            wLowVersion;
-    WORD            wHighVersion;
-    CHAR            szDescription[WFSDDESCRIPTION_LEN+1];
-    CHAR            szSystemStatus[WFSDSYSSTATUS_LEN+1];
+    WORD            wVersion;                               // xfs-sst-js:{name:"data.field"}
+    WORD            wLowVersion;                            // xfs-sst-js:{name:"data.field"}
+    WORD            wHighVersion;                           // xfs-sst-js:{name:"data.field"}
+    CHAR            szDescription[WFSDDESCRIPTION_LEN+1];   // xfs-sst-js:{name:"data.field"}
+    CHAR            szSystemStatus[WFSDSYSSTATUS_LEN+1];    // xfs-sst-js:{name:"data.field"}
 } WFSVERSION, * LPWFSVERSION;
+// xfs-sst-js:{name:"end"}
 
 /****** Message Structures **********************************************/
 
+// xfs-sst-js:{name:"data", type: "WFSDEVSTATUS", codeName: "XfsDevStatus", leading:3}
 typedef struct _wfs_devstatus
 {
-    LPSTR           lpszPhysicalName;
-    LPSTR           lpszWorkstationName;
-    DWORD           dwState;
+    LPSTR           lpszPhysicalName;           // xfs-sst-js:{name:"data.field"}
+    LPSTR           lpszWorkstationName;        // xfs-sst-js:{name:"data.field"}
+    DWORD           dwState;                    // xfs-sst-js:{name:"data.field"}
 } WFSDEVSTATUS, * LPWFSDEVSTATUS;
-  
+// xfs-sst-js:{name:"end"}
+
+// xfs-sst-js:{name:"data", type: "WFSUNDEVMSG", codeName: "XfsUndevMsg", leading:3}
 typedef struct _wfs_undevmsg
 {
-    LPSTR           lpszLogicalName;
-    LPSTR           lpszWorkstationName;
-    LPSTR           lpszAppID;
-    DWORD           dwSize;
-    LPBYTE          lpbDescription;
-    DWORD           dwMsg;
-    LPWFSRESULT     lpWFSResult;
+    LPSTR           lpszLogicalName;            // xfs-sst-js:{name:"data.field"}
+    LPSTR           lpszWorkstationName;        // xfs-sst-js:{name:"data.field"}
+    LPSTR           lpszAppID;                  // xfs-sst-js:{name:"data.field"}
+    DWORD           dwSize;                     // xfs-sst-js:{name:"data.field"}
+    LPBYTE          lpbDescription;             // xfs-sst-js:{name:"data.field"}
+    DWORD           dwMsg;                      // xfs-sst-js:{name:"data.field"}
+    LPWFSRESULT     lpWFSResult;                // xfs-sst-js:{name:"data.field"}
 } WFSUNDEVMSG, * LPWFSUNDEVMSG;  
+// xfs-sst-js:{name:"end"}
 
+// xfs-sst-js:{name:"data", type: "WFSAPPDISC", codeName: "XfsAppDisc", leading:3}
 typedef struct _wfs_appdisc
 {
-    LPSTR           lpszLogicalName;
-    LPSTR           lpszWorkstationName;
-    LPSTR           lpszAppID;
+    LPSTR           lpszLogicalName;            // xfs-sst-js:{name:"data.field"}
+    LPSTR           lpszWorkstationName;        // xfs-sst-js:{name:"data.field"}
+    LPSTR           lpszAppID;                  // xfs-sst-js:{name:"data.field"}
 } WFSAPPDISC, * LPWFSAPPDISC;
-                    
+// xfs-sst-js:{name:"end"}
+
+// xfs-sst-js:{name:"data", type: "WFSHWERROR", codeName: "XfsHwError", leading:3}
 typedef struct _wfs_hwerror
 {
-    LPSTR           lpszLogicalName;
-    LPSTR           lpszPhysicalName;
-    LPSTR           lpszWorkstationName;
-    LPSTR           lpszAppID;
-    DWORD           dwAction;
-    DWORD           dwSize;
-    LPBYTE          lpbDescription;
+    LPSTR           lpszLogicalName;			// xfs-sst-js:{name:"data.field"}
+    LPSTR           lpszPhysicalName;           // xfs-sst-js:{name:"data.field"}
+    LPSTR           lpszWorkstationName;        // xfs-sst-js:{name:"data.field"}
+    LPSTR           lpszAppID;                  // xfs-sst-js:{name:"data.field"}
+    DWORD           dwAction;					// xfs-sst-js:{name:"data.field"}
+    DWORD           dwSize;                     // xfs-sst-js:{name:"data.field"}
+    LPBYTE          lpbDescription;             // xfs-sst-js:{name:"data.field"}
 } WFSHWERROR, * LPWFSHWERROR;
+// xfs-sst-js:{name:"end"}
 
+// xfs-sst-js:{name:"data", type: "WFSVRSNERROR", codeName: "XfsVrsnError", leading:3}
 typedef struct _wfs_vrsnerror
 {
-    LPSTR           lpszLogicalName;
-    LPSTR           lpszWorkstationName;
-    LPSTR           lpszAppID;
-    DWORD           dwSize;
-    LPBYTE          lpbDescription;
-    LPWFSVERSION    lpWFSVersion;
+    LPSTR           lpszLogicalName;			// xfs-sst-js:{name:"data.field"}
+    LPSTR           lpszWorkstationName;        // xfs-sst-js:{name:"data.field"}
+    LPSTR           lpszAppID;                  // xfs-sst-js:{name:"data.field"}
+    DWORD           dwSize;                     // xfs-sst-js:{name:"data.field"}
+    LPBYTE          lpbDescription;				// xfs-sst-js:{name:"data.field"}
+    LPWFSVERSION    lpWFSVersion;               // xfs-sst-js:{name:"data.field"}
 } WFSVRSNERROR, * LPWFSVRSNERROR;
+// xfs-sst-js:{name:"end"}
 
 /****** Error codes ******************************************************/
-// xfs-sst-js:{"name":"nc", "bitwise":false, "applies":["WFSRESULT.hResult"], "codeName":"XfsErrorCode"}
+// xfs-sst-js:{name:"nc", bitwise:false, applies:["WFSRESULT.hResult"], codeName:"XfsErrorCode"}
 #define WFS_SUCCESS                             (0)
 #define WFS_ERR_ALREADY_STARTED                 (-1)
 #define WFS_ERR_API_VER_TOO_HIGH                (-2)
@@ -198,13 +212,13 @@ typedef struct _wfs_vrsnerror
 #define WFS_ERR_USER_ERROR                      (-55)
 #define WFS_ERR_UNSUPP_DATA                     (-56)
 #define WFS_ERR_SP_CRASH                        (-1025)
-// xfs-sst-js:{"name":"end"}
+// xfs-sst-js:{name:"end"}
 #define WFS_INDEFINITE_WAIT                     0
 
 /****** Messages ********************************************************/
 
 /* Message-No = (WM_USER + No) */
-// xfs-sst-js:{"name":"nc", "bitwise":false, "applies":[], "codeName":"XfsMessage"}
+// xfs-sst-js:{name:"nc", bitwise:false, applies:[], codeName:"XfsMessage"}
 #define WFS_OPEN_COMPLETE                       (WM_USER + 1)
 #define WFS_CLOSE_COMPLETE                      (WM_USER + 2)
 #define WFS_LOCK_COMPLETE                       (WM_USER + 3)
@@ -220,16 +234,16 @@ typedef struct _wfs_vrsnerror
 #define WFS_SYSTEM_EVENT                        (WM_USER + 23)
 
 #define WFS_TIMER_EVENT                         (WM_USER + 100)
-// xfs-sst-js:{"name":"end"}
+// xfs-sst-js:{name:"end"}
 /****** Event Classes ***************************************************/
-// xfs-sst-js:{"name":"nc", "bitwise":true, "applies":["WFPRegister.dwEventClass", "WFPDeregister.dwEventClass"], "codeName":"XfsEvent"}
+// xfs-sst-js:{name:"nc", bitwise:true, applies:["WFPRegister.dwEventClass", "WFPDeregister.dwEventClass"], codeName:"XfsEventClass"}
 #define SERVICE_EVENTS                          (1)
 #define USER_EVENTS                             (2)
 #define SYSTEM_EVENTS                           (4)
 #define EXECUTE_EVENTS                          (8)
-// xfs-sst-js:{"name":"end"}
+// xfs-sst-js:{name:"end"}
 /****** System Event IDs ************************************************/
-// xfs-sst-js:{"name":"nc", "bitwise":false, "applies":["WFSRESULT.u.dwEventID"], "codeName":"XfsSysEvent"}
+// xfs-sst-js:{name:"nc", bitwise:false, applies:["WFSRESULT.u.dwEventID"], codeName:"XfsSysEvent"}
 #define WFS_SYSE_UNDELIVERABLE_MSG              (1)
 #define WFS_SYSE_HARDWARE_ERROR                 (2)
 #define WFS_SYSE_VERSION_ERROR                  (3)
@@ -238,18 +252,18 @@ typedef struct _wfs_vrsnerror
 #define WFS_SYSE_SOFTWARE_ERROR                 (6)
 #define WFS_SYSE_USER_ERROR                     (7)
 #define WFS_SYSE_LOCK_REQUESTED                 (8)
-// xfs-sst-js:{"name":"end"}
+// xfs-sst-js:{name:"end"}
 
 /****** XFS Trace Level ********************************************/
-// xfs-sst-js:{"name":"nc", "bitwise":true, "applies":[], "codeName":"XfsTraceLevel"}
+// xfs-sst-js:{name:"nc", bitwise:true, applies:["WFMSetTraceLevel.dwTraceLevel"], codeName:"XfsTraceLevel"}
 #define WFS_TRACE_API                           0x00000001
 #define WFS_TRACE_ALL_API                       0x00000002
 #define WFS_TRACE_SPI                           0x00000004
 #define WFS_TRACE_ALL_SPI                       0x00000008
 #define WFS_TRACE_MGR                           0x00000010
-// xfs-sst-js:{"name":"end"}
+// xfs-sst-js:{name:"end"}
 /****** XFS Error Actions ********************************************/
-// xfs-sst-js:{"name":"nc", "bitwise":true, "applies":["WFSHWERROR.dwAction"], "codeName":"XfsErrorAction"}
+// xfs-sst-js:{name:"nc", bitwise:true, applies:["WFSHWERROR.dwAction"], codeName:"XfsErrorAction"}
 #define WFS_ERR_ACT_NOACTION                    (0x0000)
 #define WFS_ERR_ACT_RESET                       (0x0001)
 #define WFS_ERR_ACT_SWERROR                     (0x0002)
@@ -257,7 +271,7 @@ typedef struct _wfs_vrsnerror
 #define WFS_ERR_ACT_HWCLEAR                     (0x0008)
 #define WFS_ERR_ACT_HWMAINT                     (0x0010)
 #define WFS_ERR_ACT_SUSPEND                     (0x0020)
-// xfs-sst-js:{"name":"end"}
+// xfs-sst-js:{name:"end"}
 /****** API functions ***************************************************/
 
 HRESULT extern WINAPI WFSCancelAsyncRequest ( HSERVICE hService, REQUESTID RequestID);
