@@ -22,7 +22,7 @@ exports.named_code = class {
 		// 2
 		for (var i =0; i< ts.lines.length; i++) {
 			var line = ts.lines[i];
-			var reg = /(^#define\s)([A-Z0-9_-]+)/g
+			var reg = /(^#define\s+)([A-Z0-9_-]+)/g
 			var code= reg.exec(line);
 
 			if(null != code) {
@@ -36,9 +36,13 @@ exports.named_code = class {
 			return ;
 		}
 
-		var result = util.format("#define List%s(expr) \\\n", this.codeName);
+		var result = "";
+		result += ("//##############################################################################\n");
+		result += util.format("// Get%sName Get%sId \n", this.codeName, this.codeName);
+		result += ("//##############################################################################\n");
+		result += util.format("#define List%s(expr) \\\n", this.codeName);
 		this.codes.map((code)=>{
-			result += util.format("\texpr(%s)\\\n", code);
+			result += util.format("\texpr(%s) \\\n", code);
 		});
 
 		result += util.format("\n%s(%s);\n", 

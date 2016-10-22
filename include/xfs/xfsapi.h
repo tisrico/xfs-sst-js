@@ -68,7 +68,7 @@ typedef XFSBLOCKINGHOOK * LPXFSBLOCKINGHOOK;
 
 /****** Data Structures *************************************************/
 
-// xfs-sst-js:{name:"data", type: "WFSRESULT", codeName: "XfsResult", leading:3}
+// xfs-sst-js:{name:"data", type: "WFSRESULT", codeName: "XfsResult", leading:3, output:false, input:false, command:""}
 typedef struct _wfs_result
 {
     REQUESTID       RequestID;								// xfs-sst-js:{name:"data.field"}
@@ -76,14 +76,14 @@ typedef struct _wfs_result
     SYSTEMTIME      tsTimestamp;                            // xfs-sst-js:{name:"data.field", take_addr:true}
     HRESULT         hResult;                                // xfs-sst-js:{name:"data.field"}
     union {
-        DWORD       dwCommandCode;							// x|fs-sst-js:{name:"data.field", scope:"u"}
-        DWORD       dwEventID;                              // x|fs-sst-js:{name:"data.field", scope:"u"}
+        DWORD       dwCommandCode;                          // xfs-sst-js:{name:"data.field", scope:"u."}
+        DWORD       dwEventID;                              // xfs-sst-js:{name:"data.field", scope:"u.", codeName:"XfsEvent"}
     } u;
     LPVOID          lpBuffer;                               // x|fs-sst-js:{name:"data.field"}
 } WFSRESULT, * LPWFSRESULT;
 // xfs-sst-js:{name:"end"}
 
-// xfs-sst-js:{name:"data", type: "WFSVERSION", codeName: "XfsVersion", leading:3}
+// xfs-sst-js:{name:"data", type: "WFSVERSION", codeName: "XfsVersion", leading:3, output:false, input:false, command:""}
 typedef struct _wfsversion
 {
     WORD            wVersion;                               // xfs-sst-js:{name:"data.field"}
@@ -96,7 +96,7 @@ typedef struct _wfsversion
 
 /****** Message Structures **********************************************/
 
-// xfs-sst-js:{name:"data", type: "WFSDEVSTATUS", codeName: "XfsDevStatus", leading:3}
+// xfs-sst-js:{name:"data", type: "WFSDEVSTATUS", codeName: "XfsDevStatus", leading:3, output:false, input:false, command:""}
 typedef struct _wfs_devstatus
 {
     LPSTR           lpszPhysicalName;           // xfs-sst-js:{name:"data.field"}
@@ -105,7 +105,7 @@ typedef struct _wfs_devstatus
 } WFSDEVSTATUS, * LPWFSDEVSTATUS;
 // xfs-sst-js:{name:"end"}
 
-// xfs-sst-js:{name:"data", type: "WFSUNDEVMSG", codeName: "XfsUndevMsg", leading:3}
+// xfs-sst-js:{name:"data", type: "WFSUNDEVMSG", codeName: "XfsUndevMsg", leading:3, output:false, input:false, command:""}
 typedef struct _wfs_undevmsg
 {
     LPSTR           lpszLogicalName;            // xfs-sst-js:{name:"data.field"}
@@ -118,7 +118,7 @@ typedef struct _wfs_undevmsg
 } WFSUNDEVMSG, * LPWFSUNDEVMSG;  
 // xfs-sst-js:{name:"end"}
 
-// xfs-sst-js:{name:"data", type: "WFSAPPDISC", codeName: "XfsAppDisc", leading:3}
+// xfs-sst-js:{name:"data", type: "WFSAPPDISC", codeName: "XfsAppDisc", leading:3, output:false, input:false, command:""}
 typedef struct _wfs_appdisc
 {
     LPSTR           lpszLogicalName;            // xfs-sst-js:{name:"data.field"}
@@ -127,7 +127,7 @@ typedef struct _wfs_appdisc
 } WFSAPPDISC, * LPWFSAPPDISC;
 // xfs-sst-js:{name:"end"}
 
-// xfs-sst-js:{name:"data", type: "WFSHWERROR", codeName: "XfsHwError", leading:3}
+// xfs-sst-js:{name:"data", type: "WFSHWERROR", codeName: "XfsHwError", leading:3, output:false, input:false, command:""}
 typedef struct _wfs_hwerror
 {
     LPSTR           lpszLogicalName;			// xfs-sst-js:{name:"data.field"}
@@ -140,7 +140,7 @@ typedef struct _wfs_hwerror
 } WFSHWERROR, * LPWFSHWERROR;
 // xfs-sst-js:{name:"end"}
 
-// xfs-sst-js:{name:"data", type: "WFSVRSNERROR", codeName: "XfsVrsnError", leading:3}
+// xfs-sst-js:{name:"data", type: "WFSVRSNERROR", codeName: "XfsVrsnError", leading:3, output:false, input:false, command:""}
 typedef struct _wfs_vrsnerror
 {
     LPSTR           lpszLogicalName;			// xfs-sst-js:{name:"data.field"}

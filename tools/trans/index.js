@@ -7,7 +7,7 @@ const path = require('path');
 const util = require('util');
 
 var args = process.argv.slice(2);
-var gSections = [];
+var gTranslators = [];
 
 args.map((item)=> {
 	proc(item);
@@ -19,16 +19,16 @@ args.map((item)=> {
 	console.log(new named_code().header());
 	console.log(new data_structure().header());
 
-	gSections.map((item)=>{
-		var out = item.generate(gSections, "nc");
-		if(out != undefined) {
+	gTranslators.map((item)=>{
+		var out = item.generate(gTranslators, "nc");
+		if(out) {
 			console.log(out);
 		}
 	});
 
-	gSections.map((item)=>{
-		var out = item.generate(gSections, "data");
-		if(out != undefined) {
+	gTranslators.map((item)=>{
+		var out = item.generate(gTranslators, "data");
+		if(out) {
 			console.log(out);
 		}		
 	});
@@ -57,11 +57,35 @@ function proc(path) {
 
 	for(var i=0; i<lines.length; i++) {
 		var line = lines[i];
-		var fs = ts.feed(line);
+		var translator = ts.feed(line);
 
-		if(fs != undefined) {
-			//console.log(fs);
-			gSections.push(fs);
+		if(translator != undefined) {
+			addTranslator(translator)
 		}
+	}
+}
+
+function addTranslator(trans) {
+	if(trans.type != "nc") {
+		gTranslators.push(trans);
+		return;
+	}
+
+	var added = false;
+	gTranslators.map((item)=> {
+		if(item.type != "nc") {
+			return;
+		}
+
+		if(item.codeName != trans.codeName) {
+			return;
+		}
+		
+		added = true;
+		item.codes = item.codes.concat(trans.codes);
+	});
+
+	if(!added) {
+		gTranslators.push(trans);
 	}
 }
