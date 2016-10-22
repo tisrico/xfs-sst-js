@@ -1,5 +1,10 @@
-const fs = require('fs');
 const trans_section = require('./trans_section.js').trans_section;
+const data_structure = require('./data_structure.js').data_structure;
+const named_code = require('./named_code.js').named_code;
+
+const fs = require('fs');
+const path = require('path');
+const util = require('util');
 
 var args = process.argv.slice(2);
 var gSections = [];
@@ -9,22 +14,17 @@ args.map((item)=> {
 });
 
 (function output() {
-	
+	console.log(includes(args));
+
+	console.log(new named_code().header());
+	console.log(new data_structure().header());
+
 	gSections.map((item)=>{
 		var out = item.generate(gSections, "nc");
 		if(out != undefined) {
-			//console.log(out);
+			console.log(out);
 		}
 	});
-	
-	console.log("//##############################################################################");
-	console.log("//##############################################################################");
-	console.log("template <typename T>");
-	console.log("T* XSJTranslate(const json& j);");
-
-	console.log("template <typename T>");
-	console.log("json XSJTranslate(const T* p);");
-	console.log("");
 
 	gSections.map((item)=>{
 		var out = item.generate(gSections, "data");
@@ -34,6 +34,14 @@ args.map((item)=> {
 	});
 
 })();
+
+function includes(args) {
+	var result = "";
+	args.map((item)=> {
+		result += util.format("#include \"%s\"\n", path.basename(item));
+	});
+	return result;
+}
 
 function read_file(path) {
 	fs.accessSync(path, fs.F_OK);

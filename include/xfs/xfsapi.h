@@ -73,13 +73,13 @@ typedef struct _wfs_result
 {
     REQUESTID       RequestID;								// xfs-sst-js:{name:"data.field"}
     HSERVICE        hService;                               // xfs-sst-js:{name:"data.field"}
-    SYSTEMTIME      tsTimestamp;                            // xfs-sst-js:{name:"data.field"}
+    SYSTEMTIME      tsTimestamp;                            // xfs-sst-js:{name:"data.field", take_addr:true}
     HRESULT         hResult;                                // xfs-sst-js:{name:"data.field"}
     union {
-        DWORD       dwCommandCode;							// xfs-sst-js:{name:"data.field", scope:"u"}
-        DWORD       dwEventID;                              // xfs-sst-js:{name:"data.field", scope:"u"}
+        DWORD       dwCommandCode;							// x|fs-sst-js:{name:"data.field", scope:"u"}
+        DWORD       dwEventID;                              // x|fs-sst-js:{name:"data.field", scope:"u"}
     } u;
-    LPVOID          lpBuffer;                               // xfs-sst-js:{name:"data.field"}
+    LPVOID          lpBuffer;                               // x|fs-sst-js:{name:"data.field"}
 } WFSRESULT, * LPWFSRESULT;
 // xfs-sst-js:{name:"end"}
 

@@ -2,6 +2,10 @@ const util = require('util');
 
 exports.named_code = class {
 	constructor(ts) {
+		if(undefined == ts) {
+			return;
+		}
+
 		this.type = ts.markup.name;
 		this.applies = [];	// 1
 		this.codes = [];  // 2
@@ -32,9 +36,9 @@ exports.named_code = class {
 			return ;
 		}
 
-		var result = util.format("#define List%s(expr) \\n\n", this.codeName);
+		var result = util.format("#define List%s(expr) \\\n", this.codeName);
 		this.codes.map((code)=>{
-			result += util.format("\texpr(%s)\\n\n", code);
+			result += util.format("\texpr(%s)\\\n", code);
 		});
 
 		result += util.format("\n%s(%s);\n", 
@@ -42,4 +46,9 @@ exports.named_code = class {
 
 		return result;
 	}
+
+	header() {
+		var result = "#include \"nc.h\"\n";
+		return result;
+	}	
 };

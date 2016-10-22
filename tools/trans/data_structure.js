@@ -30,6 +30,11 @@ function data_field (f1, f2, f3) {
 	var epos = f3.lastIndexOf("}")+1;
 	this.extra = eval(util.format("Object(%s)", f3.slice(spos, epos)));
 	this.jsName = this.csName.replace(/^[a-z]*/, "").uncapitalize();
+
+	this.take_addr = false;
+	if(this.extra.hasOwnProperty('take_addr')) {
+		this. take_addr = this.extra.take_addr;
+	}
 }
 
 function find_ds(gs, type) {
@@ -39,7 +44,7 @@ function find_ds(gs, type) {
 			return;
 		}
 
-		if(("LP"+item.struct) == type){
+		if((item.struct) == type){
 			ds = item;
 		}
 	});
@@ -71,6 +76,10 @@ function find_nc(gs, ds, field) {
 
 exports.data_structure = class {
 	constructor(ts) {
+		if(undefined == ts) {
+			return;
+		}
+
 		this.type = ts.markup.name;
 		this.struct = ts.markup.type;
 		this.name = ts.markup.codeName;
@@ -94,8 +103,12 @@ exports.data_structure = class {
 	}
 
 	generate(gs, run) {
-		if(run != "data") {
+		if(!/data.*/.test(run)) {
 			return ;
+		}
+
+		if(run == "data.header") {
+			return header();
 		}
 
 		var result = this.toJson(gs);
@@ -105,13 +118,28 @@ exports.data_structure = class {
 		return result;
 	}
 
+	header() {
+		var result = "";
+		result += "#include \"json.hpp\"\n";
+		result += "using json = nlohmann::json;\n\n";
+		result += ("//##############################################################################\n");
+		result += ("//##############################################################################\n");
+		result += ("template <typename T>\n");
+		result += ("T* XSJTranslate(const json& j);\n\n");
+
+		result += ("template <typename T>\n");
+		result += ("json XSJTranslate(const T* p);\n\n");
+
+		return result;
+	}
+
 	toJson(gs) {
 		var result = "";
 		result += "//##############################################################################\n";
 		result += "//##############################################################################\n";
 		result += "template <>\n";
-		result += util.format("json XSJTranslate(const LP%s p) {\n", this.struct);
-		result += "\tjoson j;\n";
+		result += util.format("json XSJTranslate(const %s* p) {\n", this.struct);
+		result += "\tjson j;\n\n";
 
 		// fields
 		this.fields.map((f)=>{
@@ -121,8 +149,9 @@ exports.data_structure = class {
 				var pds = find_ds(gs, f.type);
 				if(pds) {
 					//j[jsName]=XSJTranslate<f.type>(p->csName);
-					result += util.format("\tj['%s'] = XSJTranslate<%s>( p->%s );\n",
-						f.jsName.uncapitalize(pds.markup.leading), f.type, f.csName);
+					result += util.format("\tj[\"%s\"] = XSJTranslate<%s>(%s(p->%s));\n",
+						f.jsName.uncapitalize(pds.markup.leading), f.type, 
+						f.take_addr?"&":"",	f.csName);
 					return;
 				}
 
@@ -130,19 +159,19 @@ exports.data_structure = class {
 				var pnc = find_nc(gs, this, f);
 				if(pnc) {
 					//j[jsName]=GetXXXName(p->csName);
-					result += util.format("\tj['%s'] = Get%sName( p->%s );\n",
+					result += util.format('\tj[\"%s\"] = Get%sName( p->%s );\n',
 						f.jsName, pnc.codeName, f.csName);
 					return;
 				}
 				else {
-					result += util.format("\tj['%s'] = ( p->%s );\n",
+					result += util.format('\tj[\"%s\"] = ( p->%s );\n',
 						f.jsName, f.csName);
 					return;					
 				}
 			}
 		});
 
-		result += "\treturn j;\n}\n";
+		result += "\n\treturn j;\n}\n";
 
 		return result;
 	}
