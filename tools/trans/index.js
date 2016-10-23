@@ -82,6 +82,7 @@ function addTranslator(trans) {
 		}
 		
 		added = true;
+		item.applies = item.applies.concat(trans.applies);
 		item.codes = item.codes.concat(trans.codes);
 	});
 

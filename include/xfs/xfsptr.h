@@ -22,7 +22,10 @@ extern "C" {
 
 /* value of WFSPTRCAPS.wClass */
 
+// xfs-sst-js:{name:"nc", bitwise:false, applies:["WFSPTRCAPS.wClass"], codeName:"XfsServiceClass"}
 #define    WFS_SERVICE_CLASS_PTR            (1)
+// xfs-sst-js:{name:"end"}
+
 #define    WFS_SERVICE_CLASS_VERSION_PTR    (0x0003) /* Version 3.00 */
 #define    WFS_SERVICE_CLASS_NAME_PTR       "PTR"
 
@@ -204,7 +207,7 @@ extern "C" {
 // xfs-sst-js:{name:"end"}
 
 /* values of WFSPTRCAPS.fwControl, dwMediaControl */
-// xfs-sst-js:{name:"nc", bitwise:true, applies:["WFSPTRCAPS.fwControl", ".*dwMediaControl"], codeName:"XfsPtrControl"}
+// xfs-sst-js:{name:"nc", bitwise:true, applies:["WFSPTRCAPS.fwControl", "WFSPTRRESET.dwMediaControl", "WFSPTRREADFORM.dwMediaControl", " WFSPTRPRINTFORM.dwMediaControl", "WFSPTRMEDIACONTROL.lpdwMediaControl"], codeName:"XfsPtrControl"}
 #define    WFS_PTR_CTRLEJECT                0x0001
 #define    WFS_PTR_CTRLPERFORATE            0x0002
 #define    WFS_PTR_CTRLCUT                  0x0004
@@ -225,7 +228,7 @@ extern "C" {
              WFSFRMMEDIA.wPaperSources,
              WFSPTRPRINTFORM.wPaperSource and
              WFSPTRPAPERTHRESHOLD.wPaperSource   */
-// xfs-sst-js:{name:"nc", bitwise:true, applies:["WFSPTRDISPENSEPAPER.wPaperSource", "WFSPTRCAPS.fwPaperSources", "WFSFRMMEDIA.wPaperSources", "WFSPTRPRINTFORM.wPaperSource", "WFSPTRPAPERTHRESHOLD.wPaperSource"], codeName:"XfsPtrPaperSource"}
+// xfs-sst-js:{name:"nc", bitwise:true, applies:["WFSPTRDISPENSEPAPER.wPaperSource", "WFSPTRDISPENSEPAPER.wPaperSource", "WFSPTRCAPS.fwPaperSources", "WFSFRMMEDIA.wPaperSources", "WFSPTRPRINTFORM.wPaperSource", "WFSPTRPAPERTHRESHOLD.wPaperSource"], codeName:"XfsPtrPaperSource"}
 #define    WFS_PTR_PAPERANY                 0x0001
 #define    WFS_PTR_PAPERUPPER               0x0002
 #define    WFS_PTR_PAPERLOWER               0x0004
@@ -423,7 +426,7 @@ extern "C" {
 /*=================================================================*/
 /* PTR Info Command Structures */
 /*=================================================================*/
-// xfs-sst-js:{name:"data", type:"WFSPTRRETRACTBINS", codeName:"PtrRetractBins", leading:3, output:false, input:false, command:""}
+// xfs-sst-js:{name:"data", type:"WFSPTRRETRACTBINS", codeName:"PtrRetractBins", leading:3, output:true, input:true, command:""}
 typedef struct _wfs_ptr_retract_bins
 {
    WORD      wRetractBin;                           // xfs-sst-js:{name:"data.field"}

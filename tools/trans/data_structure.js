@@ -71,9 +71,9 @@ function data_field (f1, f2, f3) {
 		this.namedArrayIndex = this.extra.namedArrayIndex;
 	}
 
-	this.pointerOfNamedCode = false;
-	if(this.extra.hasOwnProperty('pointerOfNamedCode')) {
-		this.pointerOfNamedCode = this.extra.pointerOfNamedCode;
+	this.valueAtPointer = false;
+	if(this.extra.hasOwnProperty('valueAtPointer')) {
+		this.valueAtPointer = this.extra.valueAtPointer;
 	}
 }
 
@@ -115,6 +115,26 @@ function find_nc(gs, ds, field) {
 			//console.log(it);
 			if([ds.struct, field.csName].join(".") == 
 				it.join(".")) {
+				nc = item;
+				return;
+			}
+		});
+
+	});
+
+	return nc;
+}
+
+function find_nci(gs, applies) {
+	var nc = undefined;
+	gs.map((item)=>{
+		if(item.type != "nc" || nc) {
+			return;
+		}
+
+		item.applies.map((it)=>{
+			//console.log(it);
+			if(applies == it.join(".")) {
 				nc = item;
 				return;
 			}
@@ -223,11 +243,14 @@ exports.data_structure = class {
 
 		var result = "";
 		result += "//##############################################################################\n";
+		if(this.command) {
+			result += util.format("// %s, in:%s, out:%s\n", this.command, this.input, this.output);
+		}
 		result += "//##############################################################################\n";
 		result += "template <>\n";
 		result += util.format("json XSJTranslate(const %s* p) {\n", this.struct);
-		result += "\tjson j;\n\n";
-
+		result += "\tjson j;\n";
+		result += "\tif(!p) return j;\n\n";
 
 		if(this.directCopy) {
 
@@ -239,16 +262,33 @@ exports.data_structure = class {
 		}
 		// fields
 		this.fields.map((f)=>{
-			if(!f.fixedArray && !f.ntArray && !f.namedArray) {
 
+			var prefix ="";
+			var condition ="";
+
+			if(f.take_addr) {
+				prefix = "&";
+			} else {
+				if(f.valueAtPointer) {
+					prefix = "*";
+					condition = util.format("\tif(p->%s%s)\n\t", f.scope, f.csName);
+				}
+			}
+
+			/*if(f.csName.substring(0,2) == "lp") {
+				condition = util.format("\tif(p->%s%s)\n\t", f.scope, f.csName);	
+			}*/
+
+
+			if(!f.fixedArray && !f.ntArray && !f.namedArray) {
 				// search if it is a known data type
 				var pds = find_ds(gs, f.type);
 				if(pds) {
 					//j[jsName]=XSJTranslate<f.type>(p->csName);
-					result += util.format("\tj[\"%s\"] = XSJTranslate<%s>(%s(p->%s%s));\n",
-						f.jsName.uncapitalize(pds.leading), 
+					result += util.format("%s\tj[\"%s\"] = XSJTranslate<%s>(%s(p->%s%s));\n",
+						condition, f.jsName.uncapitalize(pds.leading), 
 						f.take_addr?f.type:f.type.slice(2), 
-						f.take_addr?"&":"", f.scope, f.csName);
+						prefix, f.scope, f.csName);
 					return;
 				}
 
@@ -256,30 +296,77 @@ exports.data_structure = class {
 				var pnc = find_nc(gs, this, f);
 				if(pnc) {
 					//j[jsName]=GetXXXName(p->csName);
-					result += util.format('\tj[\"%s\"] = Get%sName(%s(p->%s%s));\n',
-						f.jsName, pnc.codeName, 
-						f.pointerOfNamedCode?"*":"",
+					result += util.format('%s\tj[\"%s\"] = Get%sName(%s(p->%s%s));\n',
+						condition, f.jsName, pnc.codeName, 
+						prefix,
 						f.scope, f.csName);
 				}
 				else {
-					result += util.format('\tj[\"%s\"] = (p->%s%s);\n',
-						f.jsName, f.scope, f.csName);
+					result += util.format('%s\tj[\"%s\"] = %s(p->%s%s);\n',
+						condition, f.jsName, prefix, f.scope, f.csName);
 				}
 
 				return;
 			}
 
-			// tbd
-			if(f.fixedArray) {
+			if(f.fixedArray || f.namedArray) {
+				var prefix = "XSJ_ListArray";
+				var mainConverter = "NULL";
+				var indexConverter = "NULL";
+
+				if(!f.fixedArray) {
+					XSJ_ListArray
+				}
+
+				if(f.valueAtPointer) {
+					prefix +=  "Value";
+				}
+
+				var pds = find_ds(gs, f.type);
+				if(pds) {
+					mainConverter = util.format("XSJTranslate<%s>", pds.struct);
+				}
+
+				var pnc = find_nc(gs, this, f);
+				if(pnc) {
+					mainConverter = util.format("Get%sName", pnc.codeName);
+				}
+
+				if(f.namedArray) {
+					var pnci = find_nci(gs, f.namedArrayIndex);
+					if(pnci) {
+						indexConverter = util.format("Get%sName", pnci.codeName);
+					}
+				}
+
+				var length = f.arrayLength;
+
+				result += util.format('%s\tj[\"%s\"] = %s(p->%s%s, %s, %s, %s);\n',
+					condition, f.jsName, prefix, f.scope, f.csName, 
+					mainConverter, indexConverter, length);
+
 				return;
 			}
 
-			// tbd
 			if(f.ntArray) {
+				var prefix = "XSJ_ListNullTerminatedPointers";
+				var converter = "NULL";
+
+				if(f.valueAtPointer) {
+					prefix += "Value";
+				}
+
+				var pds = find_ds(gs, f.type);
+				if(pds) {
+					converter = util.format("XSJTranslate<%s>", pds.struct);
+				}
+
+				result += util.format('%s\tj[\"%s\"] = %s(p->%s%s, %s);\n',
+					condition, f.jsName, prefix, f.scope, f.csName, converter);
+
 				return;
 			}
 			
-			// tbd
 			if(f.namedArray) {
 				return;
 			}
