@@ -46,7 +46,7 @@ template <typename T, typename R=json>
 json XSJ_ListNullTerminatedPointers(T* const * pp, R(*converter)(const T*)) {
 	std::vector<R> js;
 	if(!pp) {
-		return json(js);
+		return js;
 	}
 
 	while(*pp) {
@@ -60,7 +60,7 @@ json XSJ_ListNullTerminatedPointers(T* const * pp, R(*converter)(const T*)) {
 		pp++;
 	}
 
-	return json(js);
+	return js;
 }
 
 //##############################################################################
@@ -69,7 +69,7 @@ template <typename T, typename R=json>
 json XSJ_ListNullTerminatedPointersValue(T* const * pp, R(*converter)(const T)) {
 	std::vector<R> js;
 	if(!pp) {
-		return json(js);
+		return js;
 	}
 
 	while(*pp) {
@@ -83,17 +83,22 @@ json XSJ_ListNullTerminatedPointersValue(T* const * pp, R(*converter)(const T)) 
 		pp++;
 	}
 
-	return json(js);
+	return js;
 }
 
 //##############################################################################
 //##############################################################################
-template <typename T, typename W, typename R=json>
-json XSJ_ListArray(const T* p, R(*mc)(const T), std::string(*ic)(W), int len) {
-	std::map<std::string, R> jsm;
-	std::vector<std::string> jsa;
+template <typename T, typename S, typename W, typename R=json>
+json XSJ_ListArray(const T* p, R(*mc)(const S), std::string(*ic)(const W), int len) {
+	std::map<std::string, json> jsm;
+	std::vector<json> jsa;
 	if(!p) {
-		return json(js);
+		if(ic) {
+			return jsm;
+		}
+		else {
+			return jsa;
+		}
 	}
 
 	for(int i=0; i<len; i++) {
@@ -104,16 +109,16 @@ json XSJ_ListArray(const T* p, R(*mc)(const T), std::string(*ic)(W), int len) {
 				jsm[sidx] = mc(p[i]);
 			}
 			else {
-				jsa.push_back(mc(p));
+				jsa.push_back(mc(p[i]));
 			}
 		}
 		else {
 			if(ic) {
 				std::string sidx = ic(i);
-				jsm[sidx] = joson(p);
+				jsm[sidx] = p[i];
 			}
 			else {
-				jsa.push_back(joson(p));
+				jsa.push_back(p[i]);
 			}
 		}
 	}
@@ -126,6 +131,54 @@ json XSJ_ListArray(const T* p, R(*mc)(const T), std::string(*ic)(W), int len) {
 	}
 }
 
+
+//##############################################################################
+//##############################################################################
+template <typename T, typename S, typename W, typename R=json>
+json XSJ_ListArrayValue(const T* p, R(*mc)(const S), std::string(*ic)(const W), int len) {
+	std::map<std::string, json> jsm;
+	std::vector<json> jsa;
+	if(!p) {
+		if(ic) {
+			return jsm;
+		}
+		else {
+			return jsa;
+		}
+	}
+
+	for(int i=0; i<len; i++) {
+		if(!p[i]) {
+			continue;
+		}
+
+		if(mc) {
+			if(ic) {
+				std::string sidx = ic(i);
+				jsm[sidx] = mc(*p[i]);
+			}
+			else {
+				jsa.push_back(mc(*p[i]));
+			}
+		}
+		else {
+			if(ic) {
+				std::string sidx = ic(i);
+				jsm[sidx] = *p[i];
+			}
+			else {
+				jsa.push_back(*p[i]);
+			}
+		}
+	}
+
+	if(ic) {
+		return jsm;
+	}
+	else {
+		return jsa;
+	}
+}
 
 /*
 // xfs-sst-js:{name:"data", type: "SYSTEMTIME", codeName: "SysteTime", leading:1, output:true, input:false, command:"", directCopy:true}
