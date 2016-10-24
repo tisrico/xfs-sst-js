@@ -270,13 +270,13 @@ protected:
 
 //#############################################################################
 //#############################################################################
-LPSTR XSJStringArrayToNullTerminated(std::vector<std::string> fields, XSJAllocator& a) {
+LPSTR XSJStringArrayToNullTerminated(std::vector<std::string> fields, XSJAllocator* a) {
 	int totalSize = 0;
 	for(auto it=fields.begin(); it != fields.end(); it++) {
 		totalSize += (int)(*it).length() + 1;
 	}
 
-	LPSTR ret = (LPSTR)a.Get(totalSize+1);
+	LPSTR ret = (LPSTR)a->Get(totalSize+1);
 	LPSTR p = ret;
 
 	for(auto it=fields.begin(); it != fields.end(); it++) {
@@ -290,7 +290,7 @@ LPSTR XSJStringArrayToNullTerminated(std::vector<std::string> fields, XSJAllocat
 
 //#############################################################################
 //#############################################################################
-LPSTR XSJDecodePtrFields(const json &j, XSJAllocator& a) {
+LPSTR XSJDecodePtrFields(const json &j, XSJAllocator* a) {
 	std::vector<std::string> fields;
 
 	for (auto it = j.begin(); it != j.end(); ++it) {

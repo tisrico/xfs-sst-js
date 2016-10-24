@@ -216,6 +216,10 @@ exports.data_structure = class {
 	}
 
 	generate(gs, run) {
+		if("js" == run) {
+			return this.jspace();
+		}
+
 		if(!/data.*/.test(run)) {
 			return ;
 		}
@@ -226,9 +230,13 @@ exports.data_structure = class {
 
 		var result = this.toJson(gs);
 		result += this.fromJson(gs);
+		//result += this.
 
-		//console.warn(this);
 		return result;
+	}
+
+	jspace() {
+		return "";
 	}
 
 	header() {
@@ -238,7 +246,7 @@ exports.data_structure = class {
 		result += ("//##############################################################################\n");
 		result += ("//##############################################################################\n");
 		result += ("template <typename T>\n");
-		result += ("T* XSJTranslate(const json& j);\n\n");
+		result += ("T* XSJTranslate(const json& j, XSJAllocator* a);\n\n");
 
 		result += ("template <typename T>\n");
 		result += ("json XSJTranslate(const T* p);\n\n");
@@ -407,9 +415,10 @@ exports.data_structure = class {
 		}
 		result += "//##############################################################################\n";
 		result += "template <>\n";
-		result += util.format("%s* XSJTranslate(const json& j) {\n", this.struct);
-		result += "\tXSJAllocator a;\n";
-		result += util.format("\tauto p = (%s*)a.Get(sizeof(%s));\n\n", this.struct, this.struct);
+		result += util.format("%s* XSJTranslate(const json& j, XSJAllocator* a) {\n", this.struct);
+		result += "\tXSJAllocator allocator;\n";
+		result += "\tif(nullptr==a){\n\t\ta = &allocator;\n\t}\n";
+		result += util.format("\tauto p = (%s*)a->Get(sizeof(%s));\n\n", this.struct, this.struct);
 
 		//console.log(this);
 
@@ -419,18 +428,14 @@ exports.data_structure = class {
 
 			if(!f.fixedArray && !f.ntArray && !f.namedArray && !f.kvGroups) {
 
-				/*
-				// search if it is a known data type
+				// search if it is a known data structure nested
 				var pds = find_ds(gs, f.type);
 				if(pds) {
-					//j[jsName]=XSJTranslate<f.type>(p->csName);
-					result += util.format("%s\tj[\"%s\"] = XSJTranslate<%s>(%s(p->%s%s));\n",
-						condition, f.jsName.uncapitalize(pds.leading), 
-						f.take_addr?f.type:f.type.slice(2), 
-						prefix, f.scope, f.csName);
+					// convert j[jsName] => f.Type instance
+					result += util.format("\tp->%s =  XSJTranslate(j[\"%s\"], nullptr);",
+						f.csName, f.jsName);
 					return;
 				}
-				*/
 
 				// search if it is a known named code
 				var pnc = find_nc(gs, this, f);
@@ -451,7 +456,7 @@ exports.data_structure = class {
 					else {
 						// LPSTR
 						if(f.type == "LPSTR") {
-							result += util.format("\tp->%s = a.Get(j[\"%s\"].get<std::string>());\n", 
+							result += util.format("\tp->%s = a->Get(j[\"%s\"].get<std::string>());\n", 
 								f.csName, f.jsName);
 						}
 						else {
@@ -474,7 +479,7 @@ exports.data_structure = class {
 			console.warn("field not supported", f);
 		});
 
-		result += util.format("\n\treturn a.Get<%s>();\n}\n", this.struct);
+		result += util.format("\n\treturn a->Get<%s>();\n}\n", this.struct);
 		return result;
 	}
 };
