@@ -3,6 +3,7 @@
 #include <sstream>
 #include <iomanip>
 #include <vector>
+#include "xfsadmin.h"
 
 #include "json.hpp"
 using json = nlohmann::json;
@@ -43,7 +44,7 @@ std::vector<std::string> XSJ_List2Strings(LPCSTR pList) {
 //##############################################################################
 //##############################################################################
 template <typename T, typename R=json>
-json XSJ_ListNullTerminatedPointers(T* const * pp, R(*converter)(const T*)) {
+json XSJ_ListNullTerminatedPointers(T* const * pp, R(*converter)(const T*)=nullptr) {
 	std::vector<R> js;
 	if(!pp) {
 		return js;
@@ -180,8 +181,147 @@ json XSJ_ListArrayValue(const T* p, R(*mc)(const S), std::string(*ic)(const W), 
 	}
 }
 
+//#############################################################################
+//#############################################################################
 /*
 // xfs-sst-js:{name:"data", type: "SYSTEMTIME", codeName: "SysteTime", leading:1, output:true, input:false, command:"", directCopy:true}
 	j = XSJ_SystemTime2String(p);
 // xfs-sst-js:{name:"end"}
 */
+
+//#############################################################################
+//#############################################################################
+char* HexToBytes(const std::string& hex, char* pData) {
+	std::vector<char> bytes;
+
+	for (unsigned int i = 0; i < hex.length(); i += 2) {
+		std::string byteString = hex.substr(i, 2);
+		char byte = (char)strtol(byteString.c_str(), NULL, 16);
+		*pData = byte;
+		pData++;
+	}
+
+	return pData;
+}
+
+//#############################################################################
+//#############################################################################
+class XSJAllocator {
+public:
+	XSJAllocator(bool autoRelease = false) 
+		:m_pHead(nullptr), m_bAutoRelease(autoRelease) {
+
+		}
+
+	~XSJAllocator() {
+		if (nullptr != m_pHead && m_bAutoRelease) {
+			WFMFreeBuffer(m_pHead);
+		}		
+	}
+
+	LPVOID Get(int size) {
+		if (nullptr == m_pHead) {
+			if (WFS_SUCCESS != WFMAllocateBuffer(size, WFS_MEM_ZEROINIT, &m_pHead)) {
+				throw "XFS allocator failed";
+			}
+			return m_pHead;
+		}
+		LPVOID result;
+		if (WFS_SUCCESS != WFMAllocateMore(size, m_pHead, &result)) {
+			throw "XFS allocator failed";
+		}
+
+		return result;		
+	}
+
+	LPSTR Get(const std::string& str, bool isHex=false) {
+
+		if (!isHex) {
+			auto len = (int)str.length();
+			if (len) {
+				auto pointer = Get(len + 1);
+				memcpy(pointer, str.c_str(), len);
+				return (LPSTR)pointer;
+			}
+		}
+		else {
+			auto len = (int)str.length()/2;
+			auto pointer = Get(len + 1);
+			HexToBytes(str, (LPSTR)pointer);
+			return (LPSTR)pointer;
+		}
+
+		return nullptr;		
+	}
+
+	template<typename T>
+	T* Get() {
+		return (T*)Get(sizeof(T));
+	}
+
+	LPVOID Get(void) {
+		return m_pHead;
+	}
+
+protected:
+	LPVOID	m_pHead;
+	bool	m_bAutoRelease;
+};
+
+//#############################################################################
+//#############################################################################
+LPSTR XSJStringArrayToNullTerminated(std::vector<std::string> fields, XSJAllocator& a) {
+	int totalSize = 0;
+	for(auto it=fields.begin(); it != fields.end(); it++) {
+		totalSize += (int)(*it).length() + 1;
+	}
+
+	LPSTR ret = (LPSTR)a.Get(totalSize+1);
+	LPSTR p = ret;
+
+	for(auto it=fields.begin(); it != fields.end(); it++) {
+		strcpy(p, (*it).c_str());
+		p+=(*it).length();
+		p++;
+	}
+
+	return ret;
+}
+
+//#############################################################################
+//#############################################################################
+LPSTR XSJDecodePtrFields(const json &j, XSJAllocator& a) {
+	std::vector<std::string> fields;
+
+	for (auto it = j.begin(); it != j.end(); ++it) {
+		auto key = it.key();
+		auto value = it.value();
+
+		if(value.is_array()) {
+			int i = 0;
+			
+			for (auto ix = j.begin(); ix != j.end(); ++ix) {
+				std::stringstream oss;
+				auto subvalue = *it;
+
+
+				oss << key << "[" << i << "]=" <<
+					subvalue.get<std::string>();
+				fields.push_back(oss.str());
+
+				i++;
+			}
+		}
+		else {
+			std::string field;
+
+			field = key;
+			field += "=";
+			field += value.get<std::string>();
+
+			fields.push_back(field);
+		}
+	}
+
+	return XSJStringArrayToNullTerminated(fields, a);
+}

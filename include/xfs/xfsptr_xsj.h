@@ -20,23 +20,23 @@ typedef struct {
 // xfs-sst-js:{name:"end"}
 */
 
-// xfs-sst-js:{name:"data", type:"WFSPTRMEDIACONTROL", codeName:"PtrMediaControl", leading:1, output:false, input:true, command:"WFS_CMD_PTR_CONTROL_MEDIA"}
+// xfs-sst-js:{name:"data", type:"WFSPTCONTROLMEDIA", codeName:"PtrControlMedia", leading:1, output:false, input:true, command:"WFS_CMD_PTR_CONTROL_MEDIA"}
 typedef struct {
-	LPDWORD lpdwMediaControl;							// xfs-sst-js:{name:"data.field", valueAtPointer:true}
-} WFSPTRMEDIACONTROL, *LPWFSPTRMEDIACONTROL;
+	DWORD dwMediaControl;							// xfs-sst-js:{name:"data.field"}
+} WFSPTCONTROLMEDIA, *LPWFSPTCONTROLMEDIA;
 // xfs-sst-js:{name:"end"}
 
 
 // xfs-sst-js:{name:"data", type:"WFSPTRRESETCOUNT", codeName:"PtrResetCount", leading:1, output:false, input:true, command:"WFS_CMD_PTR_RESET_COUNT"}
 typedef struct {
-	LPUSHORT lpusBinNumber;							// xfs-sst-js:{name:"data.field", valueAtPointer:true}
+	USHORT usBinNumber;									// xfs-sst-js:{name:"data.field"}
 } WFSPTRRESETCOUNT, *LPWFSPTRRESETCOUNT;
 // xfs-sst-js:{name:"end"}
 
 
 // xfs-sst-js:{name:"data", type:"WFSPTRRETRACTMEDIA", codeName:"PtrRetractMedia", leading:1, output:true, input:true, command:"WFS_CMD_PTR_RETRACT_MEDIA"}
 typedef struct {
-	LPUSHORT lpusBinNumber;							// xfs-sst-js:{name:"data.field", valueAtPointer:true}
+	USHORT usBinNumber;									// xfs-sst-js:{name:"data.field"}
 } WFSPTRRETRACTMEDIA, *LPWFSPTRRETRACTMEDIA;
 // xfs-sst-js:{name:"end"}
 
@@ -54,25 +54,27 @@ typedef struct {
 
 // xfs-sst-js:{name:"data", type:"WFSPTRFIELDWARNING", codeName:"PtrFieldWarning", leading:1, output:true, input:false, command:"WFS_EXEE_PTR_FIELDWARNING"}
 typedef struct {
-	LPWFSPTRFIELDFAIL lpFieldFail;						// xfs-sst-js:{name:"data.field"}
+    LPSTR           lpszFormName;				 		// xfs-sst-js:{name:"data.field"}
+    LPSTR           lpszFieldName;                      // xfs-sst-js:{name:"data.field"}
+    WORD            wFailure;                           // xfs-sst-js:{name:"data.field"}
 } WFSPTRFIELDWARNING, *LPWFSPTRFIELDWARNING;
 // xfs-sst-js:{name:"end"}
 
 // xfs-sst-js:{name:"data", type:"WFSPTRTONERTHRESHOLD", codeName:"PtrTonerThreshold", leading:1, output:true, input:false, command:"WFS_USRE_PTR_TONERTHRESHOLD"}
 typedef struct {
-	LPWORD lpwTonerThreshold;							// xfs-sst-js:{name:"data.field", valueAtPointer:true}
+	WORD wTonerThreshold;							// xfs-sst-js:{name:"data.field"}
 } WFSPTRTONERTHRESHOLD, *LPWFSPTRTONERTHRESHOLD;
 // xfs-sst-js:{name:"end"}
 
 
-// xfs-sst-js:{name:"data", type:"WFSPTRLAMPTHRESHOLD", PtrLampThreshold: "SysteTime", leading:1, output:true, input:false, command:"WFS_USRE_PTR_LAMPTHRESHOLD"}
+// xfs-sst-js:{name:"data", type:"WFSPTRLAMPTHRESHOLD", codeName:"PtrLampThreshold", leading:1, output:true, input:false, command:"WFS_USRE_PTR_LAMPTHRESHOLD"}
 typedef struct {
-	LPWORD lpwLampThreshold;							// xfs-sst-js:{name:"data.field", valueAtPointer:true}
+	WORD wLampThreshold;							// xfs-sst-js:{name:"data.field"}
 } WFSPTRLAMPTHRESHOLD, *LPWFSPTRLAMPTHRESHOLD;
 // xfs-sst-js:{name:"end"}
 
 // xfs-sst-js:{name:"data", type:"WFSPTRINKTHRESHOLD", codeName:"PtrInkThreshold", leading:1, output:true, input:false, command:"WFS_USRE_PTR_INKTHRESHOLD"}
 typedef struct {
-	LPWORD lpwInkThreshold;								// xfs-sst-js:{name:"data.field", valueAtPointer:true}
+	WORD wInkThreshold;								// xfs-sst-js:{name:"data.field"}
 } WFSPTRINKTHRESHOLD, *LPWFSPTRINKTHRESHOLD;
 // xfs-sst-js:{name:"end"}

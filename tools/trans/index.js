@@ -6,51 +6,63 @@ const fs = require('fs');
 const path = require('path');
 const util = require('util');
 
-var args = process.argv.slice(2);
+var files = process.argv.slice(3);
+var option = process.argv[2];
+
 var gTranslators = [];
 
-args.map((item)=> {
+files.map((item)=> {
 	proc(item);
 });
 
 (function output() {
-	console.log(includes(args));
+	if(option == "cspace") {
+		console.log(includes(files));
 
-	console.log(new named_code().header());
-	console.log(new data_structure().header());
+		console.log(new named_code().header());
+		console.log(new data_structure().header());
 
-	gTranslators.map((item)=>{
-		var out = item.generate(gTranslators, "nc");
-		if(out) {
-			console.log(out);
-		}
-	});
+		gTranslators.map((item)=>{
+			var out = item.generate(gTranslators, "nc");
+			if(out) {
+				console.log(out);
+			}
+		});
 
-	gTranslators.map((item)=>{
-		var out = item.generate(gTranslators, "data");
-		if(out) {
-			console.log(out);
-		}		
-	});
+		gTranslators.map((item)=>{
+			var out = item.generate(gTranslators, "data");
+			if(out) {
+				console.log(out);
+			}		
+		});
+	}
 
+	if(option == "jspace") {
+		gTranslators.map((item)=>{
+			var out = item.generate(gTranslators, "js");
+			if(out) {
+				console.log(out);
+			}		
+		});
+	}
 })();
 
-function includes(args) {
+function includes(files) {
 	var result = "";
-	args.map((item)=> {
+	files.map((item)=> {
 		result += util.format("#include \"%s\"\n", path.basename(item));
 	});
 	return result;
 }
 
-function read_file(path) {
+function readFile(path) {
 	fs.accessSync(path, fs.F_OK);
 	return fs.readFileSync(path, 'utf8');
 }
 
 function proc(path) {
 	//console.log("processing...", path);
-	var content = read_file(path);
+	var content = readFile(path);
 
 	var ts = new trans_section();
 	var lines = content.split("\r\n");

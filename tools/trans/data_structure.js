@@ -75,6 +75,17 @@ function data_field (f1, f2, f3) {
 	if(this.extra.hasOwnProperty('valueAtPointer')) {
 		this.valueAtPointer = this.extra.valueAtPointer;
 	}
+
+	this.ntStringList = false;
+	if(this.extra.hasOwnProperty('ntStringList')) {
+		this.ntStringList = this.extra.ntStringList;
+	}
+
+	this.kvGroups = false;
+	if(this.extra.hasOwnProperty('kvGroups')) {
+		this.kvGroups = this.extra.kvGroups;
+	}
+
 }
 
 function find_ds(gs, type) {
@@ -214,9 +225,9 @@ exports.data_structure = class {
 		}
 
 		var result = this.toJson(gs);
-		//result += this.fromJson(gs);
+		result += this.fromJson(gs);
 
-		//console.log(this);
+		//console.warn(this);
 		return result;
 	}
 
@@ -260,6 +271,7 @@ exports.data_structure = class {
 			result += "\n\treturn j;\n}\n";
 			return result;
 		}
+
 		// fields
 		this.fields.map((f)=>{
 
@@ -280,7 +292,7 @@ exports.data_structure = class {
 			}*/
 
 
-			if(!f.fixedArray && !f.ntArray && !f.namedArray) {
+			if(!f.fixedArray && !f.ntArray && !f.namedArray && !f.ntStringList) {
 				// search if it is a known data type
 				var pds = find_ds(gs, f.type);
 				if(pds) {
@@ -366,10 +378,17 @@ exports.data_structure = class {
 
 				return;
 			}
-			
-			if(f.namedArray) {
+
+			if(f.ntStringList) {
+
+				result += util.format('%s\tj[\"%s\"] = XSJ_List2Strings(p->%s%s);\n',
+					condition, f.jsName, f.scope, f.csName);
 				return;
 			}
+			
+			console.warn(this);
+			console.warn("field not supported", f);
+
 		});
 
 		result += "\n\treturn j;\n}\n";
@@ -377,5 +396,85 @@ exports.data_structure = class {
 	}
 
 	fromJson(gs) {
+		var result = "";
+		if(!this.input) {
+			return result;
+		}
+
+		result += "//##############################################################################\n";
+		if(this.command) {
+			result += util.format("// %s, in:%s, out:%s\n", this.command, this.input, this.output);
+		}
+		result += "//##############################################################################\n";
+		result += "template <>\n";
+		result += util.format("%s* XSJTranslate(const json& j) {\n", this.struct);
+		result += "\tXSJAllocator a;\n";
+		result += util.format("\tauto p = (%s*)a.Get(sizeof(%s));\n\n", this.struct, this.struct);
+
+		//console.log(this);
+
+		// fields
+		this.fields.map((f)=>{
+			//console.log(f);
+
+			if(!f.fixedArray && !f.ntArray && !f.namedArray && !f.kvGroups) {
+
+				/*
+				// search if it is a known data type
+				var pds = find_ds(gs, f.type);
+				if(pds) {
+					//j[jsName]=XSJTranslate<f.type>(p->csName);
+					result += util.format("%s\tj[\"%s\"] = XSJTranslate<%s>(%s(p->%s%s));\n",
+						condition, f.jsName.uncapitalize(pds.leading), 
+						f.take_addr?f.type:f.type.slice(2), 
+						prefix, f.scope, f.csName);
+					return;
+				}
+				*/
+
+				// search if it is a known named code
+				var pnc = find_nc(gs, this, f);
+				if(pnc) {
+
+					// p->csName = GetXXXId(j[jsname]);
+					result += util.format("\tp->%s = (%s)Get%sId(j[\"%s\"]);\n", 
+						f.csName, f.type, pnc.codeName, f.jsName);			
+				}
+				else {
+
+					// p->csName = (TYPE)j[jsname];
+					var isPointer = (f.type.substring(0, 2) == "LP");
+					if(!isPointer) {
+						result += util.format("\tp->%s = (%s)j[\"%s\"];\n", 
+							f.csName, f.type, f.jsName);
+					}
+					else {
+						// LPSTR
+						if(f.type == "LPSTR") {
+							result += util.format("\tp->%s = a.Get(j[\"%s\"].get<std::string>());\n", 
+								f.csName, f.jsName);
+						}
+						else {
+							console.warn("unknown pointer type", this);
+						}
+					}
+				}
+
+				return;
+			}
+
+			if(f.kvGroups) {
+				console.assert(this.struct == "WFSPTRPRINTFORM" && f.csName == "lpszFields", this);
+				result += util.format("\tp->%s = XSJDecodePtrFields(j[\"%s\"], a);\n", 
+					f.csName, f.jsName);
+				return;
+			}
+
+			console.warn(this);
+			console.warn("field not supported", f);
+		});
+
+		result += util.format("\n\treturn a.Get<%s>();\n}\n", this.struct);
+		return result;
 	}
 };

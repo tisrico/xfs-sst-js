@@ -124,7 +124,7 @@ extern "C" {
 // xfs-sst-js:{name:"end"}
 
 /* values of WFSPTRSTATUS.fwToner */
-// xfs-sst-js:{name:"nc", bitwise:false, applies:["WFSPTRSTATUS.fwToner", "WFSPTRTONERTHRESHOLD.lpwTonerThreshold"], codeName:"XfsPtrTonerSatus"}
+// xfs-sst-js:{name:"nc", bitwise:false, applies:["WFSPTRSTATUS.fwToner", "WFSPTRTONERTHRESHOLD.wTonerThreshold"], codeName:"XfsPtrTonerSatus"}
 #define    WFS_PTR_TONERFULL                (0)
 #define    WFS_PTR_TONERLOW                 (1)
 #define    WFS_PTR_TONEROUT                 (2)
@@ -133,7 +133,7 @@ extern "C" {
 // xfs-sst-js:{name:"end"}
 
 /* values of WFSPTRSTATUS.fwInk */
-// xfs-sst-js:{name:"nc", bitwise:false, applies:["WFSPTRSTATUS.fwInk", "WFSPTRINKTHRESHOLD.lpwInkThreshold"], codeName:"XfsPtrInkStatus"}
+// xfs-sst-js:{name:"nc", bitwise:false, applies:["WFSPTRSTATUS.fwInk", "WFSPTRINKTHRESHOLD.wInkThreshold"], codeName:"XfsPtrInkStatus"}
 #define    WFS_PTR_INKFULL                  (0)
 #define    WFS_PTR_INKLOW                   (1)
 #define    WFS_PTR_INKOUT                   (2)
@@ -142,7 +142,7 @@ extern "C" {
 // xfs-sst-js:{name:"end"}
 
 /* values of WFSPTRSTATUS.fwLamp */
-// xfs-sst-js:{name:"nc", bitwise:false, applies:["WFSPTRSTATUS.fwLamp", "WFSPTRLAMPTHRESHOLD.lpwLampThreshold"], codeName:"XfsPtrLampStatus"}
+// xfs-sst-js:{name:"nc", bitwise:false, applies:["WFSPTRSTATUS.fwLamp", "WFSPTRLAMPTHRESHOLD.wLampThreshold"], codeName:"XfsPtrLampStatus"}
 #define    WFS_PTR_LAMPOK                   (0)
 #define    WFS_PTR_LAMPFADING               (1)
 #define    WFS_PTR_LAMPINOP                 (2)
@@ -207,7 +207,7 @@ extern "C" {
 // xfs-sst-js:{name:"end"}
 
 /* values of WFSPTRCAPS.fwControl, dwMediaControl */
-// xfs-sst-js:{name:"nc", bitwise:true, applies:["WFSPTRCAPS.fwControl", "WFSPTRRESET.dwMediaControl", "WFSPTRREADFORM.dwMediaControl", " WFSPTRPRINTFORM.dwMediaControl", "WFSPTRMEDIACONTROL.lpdwMediaControl"], codeName:"XfsPtrControl"}
+// xfs-sst-js:{name:"nc", bitwise:true, applies:["WFSPTRCAPS.fwControl", "WFSPTRRESET.dwMediaControl", "WFSPTRREADFORM.dwMediaControl", "WFSPTRPRINTFORM.dwMediaControl", "WFSPTCONTROLMEDIA.dwMediaControl"], codeName:"XfsPtrControl"}
 #define    WFS_PTR_CTRLEJECT                0x0001
 #define    WFS_PTR_CTRLPERFORATE            0x0002
 #define    WFS_PTR_CTRLCUT                  0x0004
@@ -349,7 +349,7 @@ extern "C" {
 // xfs-sst-js:{name:"end"}
 
 /* values of WFSPTRFIELDFAIL.wFailure */
-// xfs-sst-js:{name:"nc", bitwise:false, applies:["WFSPTRFIELDFAIL.wFailure"], codeName:"XfsPtrFormFieldFailure"}
+// xfs-sst-js:{name:"nc", bitwise:false, applies:["WFSPTRFIELDFAIL.wFailure, WFSPTRFIELDWARNING.wFailure"], codeName:"XfsPtrFormFieldFailure"}
 #define    WFS_PTR_FIELDREQUIRED            (0)
 #define    WFS_PTR_FIELDSTATICOVWR          (1)
 #define    WFS_PTR_FIELDOVERFLOW            (2)
@@ -495,7 +495,7 @@ typedef struct _wfs_frm_header
     WORD            wVersionMinor;                      // xfs-sst-js:{name:"data.field"}
     LPSTR           lpszUserPrompt;                     // xfs-sst-js:{name:"data.field"}
     WORD            fwCharSupport;                      // xfs-sst-js:{name:"data.field"}
-    LPSTR           lpszFields;                         // xfs-sst-js:{name:"data.field"}
+    LPSTR           lpszFields;                         // xfs-sst-js:{name:"data.field", ntStringList:true}
 } WFSFRMHEADER, * LPWFSFRMHEADER;
 // xfs-sst-js:{name:"end"}
 
@@ -563,8 +563,8 @@ typedef struct _wfs_ptr_print_form
     WORD            wOffsetY;                           // xfs-sst-js:{name:"data.field"}
     WORD            wResolution;                        // xfs-sst-js:{name:"data.field"}
     DWORD           dwMediaControl;                     // xfs-sst-js:{name:"data.field"}
-    LPSTR           lpszFields;                         // xfs-sst-js:{name:"data.field"}
-    LPWSTR          lpszUNICODEFields;                  // xfs-sst-js:{name:"data.field"}
+    LPSTR           lpszFields;                         // xfs-sst-js:{name:"data.field", kvGroups:true}
+    LPWSTR          lpszUNICODEFields;                  // x!fs-sst-js:{name:"data.field"}
     WORD            wPaperSource;                       // xfs-sst-js:{name:"data.field"}
 } WFSPTRPRINTFORM, * LPWFSPTRPRINTFORM;
 // xfs-sst-js:{name:"end"}
