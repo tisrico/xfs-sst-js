@@ -1,5 +1,5 @@
 #include <nan.h>
-#include "xfs-trans.h"
+#include "xsj.h"
 
 void module(v8::Local<v8::Object> exports) {
 }

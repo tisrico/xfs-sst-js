@@ -230,13 +230,50 @@ exports.data_structure = class {
 
 		var result = this.toJson(gs);
 		result += this.fromJson(gs);
-		//result += this.
+		//result += this.translators(gs);
 
 		return result;
 	}
 
 	jspace() {
 		return "";
+	}
+
+	makeTranslators(gs) {
+		var result = "";
+		result += "Translator* GetTranslators(int& size) {\n";
+		result += "\tstatic Translator transators[] = {\n";
+
+		gs.map((item)=> {
+			if(item.type != "data") {
+				return;
+			}
+
+			if(item.command == "") {
+				return;
+			}
+
+			console.assert(item.output || item.input, "wrong data time", item);
+
+			var fpToJS = "nullptr";
+			var fpToXFS = "nullptr";
+
+			if(item.output) {
+				fpToJS = util.format("([](LPVOID p){return XSJTranslate((LP%s)p);})", item.struct);
+			}
+
+			if(item.input) {
+				fpToXFS = util.format("([](json j){return (LPVOID)XSJTranslate<%s>(j,nullptr);})", item.struct);
+			}
+
+			result += util.format("\t\t{\"%s\", %s, %s},\n", item.command, fpToJS, fpToXFS);
+
+		});
+
+		result += "\t};\n";
+		result += "\tsize = sizeof(transators)/sizeof(Translator);\n";
+		result += "\treturn transators;\n}\n\n";
+		return result;
 	}
 
 	header() {

@@ -499,7 +499,7 @@ typedef struct _wfs_frm_header
 } WFSFRMHEADER, * LPWFSFRMHEADER;
 // xfs-sst-js:{name:"end"}
 
-// xfs-sst-js:{name:"data", type:"WFSFRMMEDIA", codeName:"PtrFormMedia", leading:3, output:false, input:false, command:"WFS_INF_PTR_MEDIA_LIST"}
+// xfs-sst-js:{name:"data", type:"WFSFRMMEDIA", codeName:"PtrFormMedia", leading:3, output:true, input:false, command:"WFS_INF_PTR_QUERY_MEDIA"}
 typedef struct _wfs_frm_media
 {
     WORD            fwMediaType;				  // xfs-sst-js:{name:"data.field"}
@@ -532,7 +532,7 @@ typedef struct _wfs_ptr_query_field
 } WFSPTRQUERYFIELD, * LPWFSPTRQUERYFIELD;
 // xfs-sst-js:{name:"end"}
 
-// xfs-sst-js:{name:"data", type:"WFSFRMFIELD", codeName:"PtrFormField", leading:3, output:true, input:false, command:"FS_INF_PTR_QUERY_FIELD", ntArray:true}
+// xfs-sst-js:{name:"data", type:"WFSFRMFIELD", codeName:"PtrFormField", leading:3, output:true, input:false, command:"WFS_INF_PTR_QUERY_FIELD", ntArray:true}
 typedef struct _wfs_frm_field
 {
     LPSTR           lpszFieldName;				  // xfs-sst-js:{name:"data.field"}
@@ -635,7 +635,7 @@ typedef struct _wfs_ptr_image_request
 } WFSPTRIMAGEREQUEST, * LPWFSPTRIMAGEREQUEST;
 // xfs-sst-js:{name:"end"}
 
-// xfs-sst-js:{name:"data", type:"WFSPTRIMAGE", codeName:"PtrImage", leading:3, output:false, input:false, command:"WFS_CMD_PTR_READ_IMAGE", ntArray:true}
+// xfs-sst-js:{name:"data", type:"WFSPTRIMAGE", codeName:"PtrImage", leading:3, output:true, input:false, command:"WFS_CMD_PTR_READ_IMAGE", ntArray:true}
 typedef struct _wfs_ptr_image
 {
     WORD           wImageSource;				  // xfs-sst-js:{name:"data.field"}

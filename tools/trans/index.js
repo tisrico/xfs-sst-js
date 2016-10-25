@@ -35,6 +35,8 @@ files.map((item)=> {
 				console.log(out);
 			}		
 		});
+
+		console.log(new data_structure().makeTranslators(gTranslators));
 	}
 
 	if(option == "jspace") {

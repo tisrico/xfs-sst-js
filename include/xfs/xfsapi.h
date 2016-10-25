@@ -76,8 +76,8 @@ typedef struct _wfs_result
     SYSTEMTIME      tsTimestamp;                            // xfs-sst-js:{name:"data.field", take_addr:true}
     HRESULT         hResult;                                // xfs-sst-js:{name:"data.field"}
     union {
-        DWORD       dwCommandCode;                          // xfs-sst-js:{name:"data.field", scope:"u."}
-        DWORD       dwEventID;                              // xfs-sst-js:{name:"data.field", scope:"u.", codeName:"XfsEvent"}
+        DWORD       dwCommandCode;                          // x|fs-sst-js:{name:"data.field", scope:"u."}
+        DWORD       dwEventID;                              // x|fs-sst-js:{name:"data.field", scope:"u.", codeName:"XfsEvent"}
     } u;
     LPVOID          lpBuffer;                               // x|fs-sst-js:{name:"data.field"}
 } WFSRESULT, * LPWFSRESULT;
