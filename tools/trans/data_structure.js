@@ -266,7 +266,7 @@ exports.data_structure = class {
 				fpToXFS = util.format("([](json j){return (LPVOID)XSJTranslate<%s>(j,nullptr);})", item.struct);
 			}
 
-			result += util.format("\t\t{\"%s\", %s, %s},\n", item.command, fpToJS, fpToXFS);
+			result += util.format("\t\t{\n\t\t\t\"%s\", \n\t\t\t%s, \n\t\t\t%s\n\t\t},\n", item.command, fpToJS, fpToXFS);
 
 		});
 
