@@ -17,8 +17,9 @@ files.map((item)=> {
 
 (function output() {
 	if(option == "cspace") {
-		console.log(includes(files));
+		console.log(beginCSpace());
 
+		console.log(includes(files));
 		console.log(new named_code().header());
 		console.log(new data_structure().header());
 
@@ -37,17 +38,22 @@ files.map((item)=> {
 		});
 
 		console.log(new data_structure().makeTranslators(gTranslators));
+		console.log(endCSpace());
+		return;
 	}
 
 	if(option == "jspace") {
-		gTranslators.map((item)=>{
-			var out = item.generate(gTranslators, "js");
-			if(out) {
-				console.log(out);
-			}		
-		});
+		console.log(new data_structure().jspace(gTranslators));
+		return;
 	}
 })();
+
+function beginCSpace() {
+	return "#ifndef __xsj_translate__h\n#define __xsj_translate__h\n";
+}
+function endCSpace() {
+	return "#endif";
+}
 
 function includes(files) {
 	var result = "";

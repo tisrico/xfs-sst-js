@@ -12,7 +12,170 @@ String.prototype.uncapitalize = function(pos) {
 	for(var i=0; i<pos; i++) {
 		result += this.charAt(i).toLowerCase();
 	}
-    return  result + this.slice(pos);
+	return  result + this.slice(pos);
+}
+
+String.prototype.capitalize = function(pos) {
+	pos=pos?pos:1;
+
+	var result = "";
+	for(var i=0; i<pos; i++) {
+		result += this.charAt(i).toUpperCase();
+	}
+	return  result + this.slice(pos);
+}
+
+function parseCommand(command) {
+	var regx = /WFS_([A-Z]+)_([A-Z]+)(.*)/g;
+	var results = regx.exec(command);
+
+	this.type = results[1].toLowerCase();
+	this.class = results[2].toLowerCase();
+	this.name = "";
+
+	var rest = results[3];
+
+	regx = /_([A-Z]+)/g;
+	var match = regx.exec(rest);
+	while(match != null) {
+		this.name += match[1].toLowerCase().capitalize();
+		match = regx.exec(rest);
+	}
+
+	this.name = this.name.uncapitalize();
+	this.tag = command;
+}
+
+function xfsDevice(c) {
+	this.deviceClass = c;
+
+	this.solicited = {};
+	this.unsolicite = [];
+
+	this.add = function(item) {
+		var p = new parseCommand(item.command);
+		if(p.type == 'inf' || p.type == 'cmd') {
+			var sol;
+
+			if(this.solicited.hasOwnProperty(item.command)) {
+				sol = this.solicited[item.command];
+			}
+			else {
+				sol = new xfsSolicited(p);
+				this.solicited[item.command] = sol;
+			}
+
+			sol.attach(item);
+		}
+		else {
+			//this.unsolicite.push(new xfsEntry(item, p))	
+		}
+	}
+
+	this.build = function() {
+		var processed = [];
+		var result = "";
+		result += util.format("class Xfs%s extends XfsDevice {\n", this.deviceClass.capitalize());
+
+		for(var x in this.solicited) {
+			result += this.solicited[x].build(processed);
+		}
+
+		processed = [];
+		this.unsolicite.map((item)=>{
+			result += item.build(processed);
+		});
+
+		result += "};\n"
+
+		return result;
+	}
+}
+
+function xfsSolicited(p) {
+	this.type = p.type;
+	this.name = p.name;
+	this.tag = p.tag;
+	this.ds_in = null;
+	this.ds_out = null;
+
+	this.attach = function (item) {
+		if(item.output) {
+			this.ds_out = item;
+		}
+
+		if(item.input) {
+			this.ds_in = item;
+		}
+	}
+
+	this.build = function (processed) {
+		if(p.type == 'inf' || p.type == 'cmd') {
+			return this.buildSolicted(processed);
+		}
+		else {
+			return this.buildUnsolicited(processed);
+		}
+	}
+
+	this.buildSolicted = function(processed) {
+		var params = this.buildParams();
+		var body = this.buildCallBody();
+
+		var result = util.format("\t%s(%s){\n", this.name, params);
+		result += body;	
+		result += "\t}\n\n";
+		return result;
+	}
+
+	this.buildParams = function() {
+		var result = "";
+		if(!this.ds_in) {
+			return "";
+		}
+
+		var names = [];
+		this.ds_in.fields.map((f) =>{
+			names.push(f.jsName);
+		});
+
+		return names.join(", ");
+	}
+
+	this.buildCallData = function () {
+		var result = "";
+		if(!this.ds_in) {
+			return "{}";
+		}
+
+		result = "{\n";
+		var pairs = [];
+		
+		this.ds_in.fields.map((f) =>{
+			pairs.push(util.format("\t\t\t%s: %s", f.jsName, f.jsName));
+		});
+
+		result += pairs.join(",\n") + "\n\t\t}";
+		return result;
+	}
+
+	this.buildCallBody = function() {
+		var result = "";
+		var cd = this.buildCallData();;
+		if(this.type == "inf") {
+			result += util.format("\t\tsuper.query('%s', %s);\n", 
+				this.tag, cd);
+		}
+		else {
+			result += util.format("\t\tsuper.execute('%s', %s);\n", 
+				this.tag, cd);
+		}
+		return result;
+	}
+
+	this.buildUnsolicited = function (processed) {
+		return "";
+	}
 }
 
 function data_field (f1, f2, f3) {
@@ -156,7 +319,6 @@ function find_nci(gs, applies) {
 	return nc;
 }
 
-
 exports.data_structure = class {
 	constructor(ts) {
 		if(undefined == ts) {
@@ -235,8 +397,37 @@ exports.data_structure = class {
 		return result;
 	}
 
-	jspace() {
-		return "";
+	jspace(gs) {
+		var result = "";
+		var devices = {};
+		gs.map((item)=>{
+			if(item.type != "data" || item.command == "") {
+				return;
+			}
+
+			var pc = new parseCommand(item.command);
+			var xd;
+
+			if(devices.hasOwnProperty(pc.class)) {
+				xd = devices[pc.class];
+			}
+			else {
+				xd = new xfsDevice(pc.class);
+				devices[pc.class] = xd;
+			}
+
+			xd.add(item);
+
+		});
+		
+		//console.log(devices);
+		//console.log(util.inspect(devices, false, null))
+
+		for(var property in devices) {
+			var device = devices[property];
+			result += device.build();
+		}
+		return result;
 	}
 
 	makeTranslators(gs) {
@@ -259,14 +450,14 @@ exports.data_structure = class {
 			var fpToXFS = "nullptr";
 
 			if(item.output) {
-				fpToJS = util.format("([](LPVOID p){return XSJTranslate((LP%s)p);})", item.struct);
+				fpToJS = util.format("([](const LPVOID p){ return XSJTranslate((LP%s)p); })", item.struct);
 			}
 
 			if(item.input) {
-				fpToXFS = util.format("([](json j){return (LPVOID)XSJTranslate<%s>(j,nullptr);})", item.struct);
+				fpToXFS = util.format("([](const json& j){ return (LPVOID)XSJTranslate<%s>(j, nullptr); })", item.struct);
 			}
 
-			result += util.format("\t\t{\n\t\t\t\"%s\", \n\t\t\t%s, \n\t\t\t%s\n\t\t},\n", item.command, fpToJS, fpToXFS);
+			result += util.format("\t\t{\n\t\t\t\"%s\", \n\t\t\t%s, \n\t\t\t%s\n\t\t},\n", item.command, fpToXFS, fpToJS);
 
 		});
 
