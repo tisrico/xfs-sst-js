@@ -87,6 +87,8 @@ function xfsDevice(c) {
 		});
 
 		result += "};\n"
+		//result += util.format("exports.Xfs%s=Xfs%s;\n", this.deviceClass.capitalize(), 
+		//	this.deviceClass.capitalize());
 
 		return result;
 	}
@@ -398,7 +400,9 @@ exports.data_structure = class {
 	}
 
 	jspace(gs) {
-		var result = "";
+
+		var result = "\n";
+
 		var devices = {};
 		gs.map((item)=>{
 			if(item.type != "data" || item.command == "") {
@@ -420,9 +424,6 @@ exports.data_structure = class {
 
 		});
 		
-		//console.log(devices);
-		//console.log(util.inspect(devices, false, null))
-
 		for(var property in devices) {
 			var device = devices[property];
 			result += device.build();

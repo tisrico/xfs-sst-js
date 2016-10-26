@@ -43,6 +43,7 @@ files.map((item)=> {
 	}
 
 	if(option == "jspace") {
+		console.log(readFile(__dirname + "/xsj-trans-header.js"));
 		console.log(new data_structure().jspace(gTranslators));
 		return;
 	}
