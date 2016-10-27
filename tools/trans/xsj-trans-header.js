@@ -15,7 +15,12 @@ function _XfsMgr() {
 
 _XfsMgr.prototype = {
 	___call: function (cd) {
-		this.__call(cd.title, JSON.stringify(cd.data));
+		if(typeof(cd.data) == "string") {
+			return this.__call(cd.title, cd.data);
+		}
+		else {
+			return this.__call(cd.title, JSON.stringify(cd.data));
+		}
 	},
 	init: function() {
 		this.___call({title:"initialize",
@@ -27,9 +32,10 @@ _XfsMgr.prototype = {
 			data: {}
 		});
 	},
-	start: function(low, high) {
+	start: function(lowMajor, lowMinor, highMajor, highMinor) {
+		var version = (lowMinor<<24)+(lowMajor<<16)+(highMinor<<8)+highMajor;
 		var result = this.___call({title:"start", 
-			data: { versionRequired: ((low<<16)|high) }
+			data: { versionRequired: version }
 		});
 
 		return result;
@@ -41,7 +47,34 @@ _XfsMgr.prototype = {
 	}
 }
 
+Object.defineProperty(__XfsMgr.prototype, "traceLevel", {
+    get: function () {
+     	return this.___call({title:"getTraceLevel",
+			data: ""
+		});
+    },
+    set: function (level) {
+     	return this.___call({title:"setTraceLevel",
+			data: level
+		});        
+    }
+});
+
+Object.defineProperty(__XfsMgr.prototype, "timeOut", {
+    get: function () {
+     	return this.___call({title:"getTimeOut",
+			data: ""
+		});
+    },
+    set: function (timeOut) {
+     	return this.___call({title:"setTimeOut",
+			data: timeOut
+		});
+    }
+});
+
 exports.XfsMgr = inhertits(__XfsMgr, _XfsMgr);
+
 /*
 function XfsMgr(traceLevel, timeOut){
 	__XfsMgr.apply(this, Array.prototype.slice.call(arguments));

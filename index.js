@@ -1,5 +1,7 @@
 const events = require('events');
 const mixin = require('mixin');
+const util = require('util');
+require('console-stamp')(console, 'HH:MM:ss.l');
 
 function inhertits(target, source) {
   for (var k in source.prototype) {
@@ -11,15 +13,46 @@ function messaging() {
 }
 
 messaging.prototype = {
+  _logger: function(title, message) {
+    if(!title.match(/console\..*/g)) {
+      if(message.length) {
+        console.log(util.format('event:%s, data:%s', title, message));
+      }
+      else {
+       console.log(util.format('event:%s', title));
+      }
+    }
+    else {
+      if(title == "console.log") {
+        console.log(message);
+      }
+      else if(title == "console.info") {
+        console.info(message);
+      }
+      else if(title == "console.warn") {
+        console.warn(message);
+      }
+      else if(title == "console.error") {
+        console.error(message);
+      }
+      else if(title == "console.assert") {
+        console.assert(0, message);
+      }
+      return;
+    }
+  },
+
   _post: function(evt) {
-   var args = arguments;
-   setImmediate(()=> {
-     this.emit.apply(this, args);
+  var args = arguments;
+  setImmediate(()=> {
+    this._logger(args[0], args[1]);
+    this.emit.apply(this, args);
   });
- },
+},
 
  _send:function(evt) {
-   this.emit.apply(this, arguments);
+    this._logger(arguments[0], arguments[1]);
+    this.emit.apply(this, arguments);
  }
 }
 
