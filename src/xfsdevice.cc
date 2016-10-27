@@ -43,7 +43,7 @@ void XfsDevice::Call(const Nan::FunctionCallbackInfo<v8::Value>& info) {
 
 	v8::Local<v8::Value> argv[2] = {
 		Nan::New("window").ToLocalChecked(),
-		Nan::New("started").ToLocalChecked(),
+		Nan::New("start").ToLocalChecked(),
 	};
 	Nan::MakeCallback(info.Holder(), "post", 2, argv);
 }

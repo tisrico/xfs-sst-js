@@ -3,36 +3,157 @@
 
 #include <nan.h>
 #include <windows.h>
+#include "xfsapi.h"
+#include <string>
+#include <iostream>
+#include <sstream>
+#include <queue>
+#include <uv.h>
 
+//#############################################################################
+//#############################################################################
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
+//#############################################################################
+//#############################################################################
+class InterThreadMessage {
+public:
+	HSERVICE		hService;
+	std::string		strTitle;
+	std::string		strData;
+	LPVOID			lpData;
+};
+
+#define HSERVICE_MGR	HSERVICE(-1)
+#define WM_NODE2WIN		(WM_USER + 10)
+
+//#############################################################################
+//#############################################################################
+class Log;
+
+//#############################################################################
+//#############################################################################
 class Window: public Nan::ObjectWrap {
 public:
   static void Init(v8::Local<v8::Object> exports);
+  
+  static bool IsNodeThread();
+  v8::Local<v8::Value> PostNodeEvent(const std::string& title, const std::string& data);
+  v8::Local<v8::Value> SendNodeEvent(const std::string& title, const std::string& data);
 
 private:
   explicit Window(const Nan::FunctionCallbackInfo<v8::Value>& info);
   ~Window();
 
   static void New(const Nan::FunctionCallbackInfo<v8::Value>& info);
-  static void Start(const Nan::FunctionCallbackInfo<v8::Value>& info);
-
   static void Call(const Nan::FunctionCallbackInfo<v8::Value>& info);
+  
+  v8::Local<v8::Value> Command(const std::string& title, const std::string& data);
+  void ProcessV8Message(InterThreadMessage* pMessage);
+  static void ProcessNodeMessage(InterThreadMessage* pMessage);
 
-  static void OnWindowMessage(uv_async_t *handle);
+  void SendToNode(HSERVICE hService, const std::string& title, const std::string& data, LPVOID lpData);
+
   bool StartThread();
-
+  static void OnNodeMessage(uv_async_t *handle);
   static void WinMessagePump(LPVOID p);
-  static void Create(const Nan::FunctionCallbackInfo<v8::Value>& info);
   static Nan::Persistent<v8::Function> constructor;
 
+  friend LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+  friend class Log;
 protected:
   uv_loop_t                  *m_loop;
   uv_async_t                  m_async;
   uv_thread_t                 m_thread_id;
   v8::Persistent<v8::Object>  m_this;
   bool                        m_sarted;
+  bool						  m_xfsStarted;
+  DWORD						  m_traceLevel;
+  DWORD						  m_timeOut;
+  HWND						  m_hwnd;
+
+  static DWORD				  m_nodeThread;
   static Window*              m_lpInstance;
 };
+
+//#############################################################################
+//#############################################################################
+class Log : public std::stringstream {
+public:
+	Log(const std::string& type_ = "log", bool cond_ = true, const std::string express_="") {
+		type = "console." + type_;
+		condition = cond_;
+		express = express_;
+	}
+	~Log() {
+		if (condition && type == "console.assert") {
+			return;
+		}
+
+		std::string log = std::stringstream::str();
+		if (express.length() && !condition) {
+			log = "(" + express + ") => " + log;
+		}
+
+		if (!Window::m_lpInstance) {
+			OutputDebugString(log.c_str());
+			return;
+		}
+
+		if (Window::IsNodeThread()) {
+			Window::m_lpInstance->SendNodeEvent(type, log);
+		}
+		else {
+			log = "(*)" + log;
+			Window::m_lpInstance->SendToNode(HSERVICE_MGR, type, log, Window::m_lpInstance);
+		}
+	}
+
+	std::string		type;
+	bool			condition;
+	std::string		express;
+};
+
+//#############################################################################
+//#############################################################################
+#define CLOG		(Log("log"))
+#define CWAR		(Log("warn"))
+#define CINF		(Log("info"))
+//#define CTRAC		(Log("trace"))
+#define CERR		(Log("error"))
+#define CASS(c)		(Log("assert", (c), (#c)))
+
+//#############################################################################
+//#############################################################################
+class MessageQueue : protected std::queue<InterThreadMessage*> {
+public:
+	MessageQueue() {
+		uv_mutex_init(&handle);
+	}
+	~MessageQueue() {
+		uv_mutex_destroy(&handle);
+	}
+	MessageQueue& operator <<(InterThreadMessage* message) {
+		uv_mutex_lock(&handle);
+		push(message);
+		uv_mutex_unlock(&handle);
+		return *this;
+	}
+
+	MessageQueue& operator >>(InterThreadMessage* &message) {
+		message = nullptr;
+		uv_mutex_lock(&handle);
+		if (size()) {
+			message = front();
+			pop();
+		}
+		uv_mutex_unlock(&handle);
+		return *this;
+	}
+
+protected:
+	uv_mutex_t handle;
+};
+
 
 #endif

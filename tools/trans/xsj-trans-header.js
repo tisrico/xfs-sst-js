@@ -1,4 +1,4 @@
-var __XfsDevice = require('bindings')('xsj').XfsDevice;
+var XfsDevice = require('bindings')('xsj').XfsDevice;
 var __XfsMgr = require('bindings')('xsj').XfsMgr;
 
 const mixin = require('mixin');
@@ -7,25 +7,67 @@ function inhertits(target, source) {
   for (var k in source.prototype) {
     target.prototype[k] = source.prototype[k];
   }
+  return target;
 }
 
-function _XfsMgr(traceLevel, timeOut){
+function _XfsMgr() {
+}
 
-	this.start=function(low, high)	{
-		result = this._xfs._start(low, high);
-		this.traceLevel = this._traceLevel;
-		this.timeOut = this._timeOut;
+_XfsMgr.prototype = {
+	___call: function (cd) {
+		this.__call(cd.title, JSON.stringify(cd.data));
+	},
+	init: function() {
+		this.___call({title:"initialize",
+			data: {}
+		});
+	},
+	uninit: function() {
+		this.___call({title:"uninitialize",
+			data: {}
+		});
+	},
+	start: function(low, high) {
+		var result = this.___call({title:"start", 
+			data: { versionRequired: ((low<<16)|high) }
+		});
+
+		return result;
+	},
+	cleanUp: function() {
+		this.___call({title:"cleanUp",
+			data: {}
+		});
+	}
+}
+
+exports.XfsMgr = inhertits(__XfsMgr, _XfsMgr);
+/*
+function XfsMgr(traceLevel, timeOut){
+	__XfsMgr.apply(this, Array.prototype.slice.call(arguments));
+
+	this.init = function () {
+		//console.log(__XfsMgr.prototype.__call);
+		__XfsMgr.prototype.__call.apply(this, ['initialize', "{}"]);
+		//this.__call('initialize', "{}");
+	}
+
+	this.start = function(low, high) {
+		console.log(this.__call);
+		result = this.__call("start", low<<16|high);
+		//this.traceLevel = this._traceLevel;
+		//this.timeOut = this._timeOut;
 		return result;
 	}
 
 	this.cleanUp=function() {
-		//return  this._xfs._clean();
+		result = this.__call("cleanUp", low<<16|high);
 	}
 
-	this.create=function(dev) {
-		return this._xfs._newDevices(dev);
+	this.open=function(dev) {
+		
 	}
-/*
+
 	set traceLevel(level) {
 		this._traceLevel = level;
 		this._xfs._setTraceLevel(level);
@@ -45,10 +87,10 @@ function _XfsMgr(traceLevel, timeOut){
 	get timeOut() {
 		return this._timeOut;
 	}
-*/	
+
 };
 
-function _XfsDevice(logicalName, appName, level, timeout) {
+function XfsDevice(logicalName, appName, level, timeout) {
 
 	this._logicalName = logicalName;
 	this._appName = appName;
@@ -102,10 +144,14 @@ function _XfsDevice(logicalName, appName, level, timeout) {
 	get timeOut() {
 		return this._timeOut;
 	}
-*/	
+
 };
 
 
-exports.XfsMgr = mixin(__XfsMgr, _XfsMgr);
-XfsDevice = mixin(__XfsDevice, _XfsDevice);
-exports.XfsDevice = XfsDevice;
+//exports.XfsMgr = mixin(__XfsMgr, _XfsMgr);
+//XfsDevice = mixin(__XfsDevice, _XfsDevice);
+XfsDevice = mixin(__XfsDevice, XfsDevice);
+XfsMgr = mixin(__XfsMgr, XfsMgr);
+
+exports.XfsMgr = XfsMgr;
+*/
