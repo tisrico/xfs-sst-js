@@ -113,16 +113,16 @@ T* Singleton<T, V>::_instance = 0;
             nc_list(NC_ADDER); \
         } \
      }; \
-        NamedCodeBase<type, bitwise>* Get##name##Instance() { \
-        static __##name##Triat initializer; \
-        return Singleton<NamedCodeBase<type, bitwise>, __##name##Triat>::Instance(); \
-        } \
-        std::string Get##name##Name(type key) { \
-                return Get##name##Instance()->Lookup(key); \
-        } \
-        type Get##name##Id(const std::string& _name) { \
-                return Get##name##Instance()->Lookup(_name); \
-        }
+    inline NamedCodeBase<type, bitwise>* Get##name##Instance() { \
+    	static __##name##Triat initializer; \
+    	return Singleton<NamedCodeBase<type, bitwise>, __##name##Triat>::Instance(); \
+    } \
+    inline std::string Get##name##Name(type key) { \
+        return Get##name##Instance()->Lookup(key); \
+    } \
+    inline type Get##name##Id(const std::string& _name) { \
+        return Get##name##Instance()->Lookup(_name); \
+    }
 
 #define DNCODE(name, type) \
     DEFINE_NAMEDCODE(name, type, false, List##name);

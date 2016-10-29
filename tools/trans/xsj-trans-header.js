@@ -1,4 +1,4 @@
-var XfsDevice = require('bindings')('xsj').XfsDevice;
+var __XfsDevice = require('bindings')('xsj').XfsDevice;
 var __XfsMgr = require('bindings')('xsj').XfsMgr;
 
 const mixin = require('mixin');
@@ -23,28 +23,94 @@ _XfsMgr.prototype = {
 		}
 	},
 	init: function() {
-		this.___call({title:"initialize",
+		return this.___call({title:"initialize",
 			data: {}
 		});
 	},
 	uninit: function() {
-		this.___call({title:"uninitialize",
+		return this.___call({title:"uninitialize",
 			data: {}
 		});
 	},
 	start: function(lowMajor, lowMinor, highMajor, highMinor) {
 		var version = (lowMinor<<24)+(lowMajor<<16)+(highMinor<<8)+highMajor;
-		var result = this.___call({title:"start", 
+		return result = this.___call({title:"start", 
 			data: { versionRequired: version }
 		});
-
-		return result;
 	},
 	cleanUp: function() {
-		this.___call({title:"cleanUp",
+		return this.___call({title:"cleanUp",
 			data: {}
 		});
-	}
+	},
+	createAppHandle: function() {
+		return this.___call({title:"createAppHandle",
+			data: {}
+		});
+	},
+	destroyAppHandle: function(handle) {
+		return this.___call({title:"destroyAppHandle",
+			data: handle
+		});
+	},
+	open: function(logicalName, lowMajor, lowMinor, highMajor, highMinor, appHandle, appId, traceLevel, timeOut) {
+		var version = (lowMinor<<24)+(lowMajor<<16)+(highMinor<<8)+highMajor;
+		if(appHandle == undefined || "WFS_DEFAULT_HAPP" == appHandle)  {
+			appHandle = 0;
+		}
+
+		if(timeOut == undefined)  {
+			timeOut = this.timeOut;
+		}
+
+		if("WFS_INDEFINITE_WAIT" == timeOut)  {
+			timeOut = 0;
+		}
+
+		if(traceLevel == undefined)  {
+			traceLevel = this.traceLevel;
+		}
+
+		if(traceLevel == "") {
+			traceLevel = "_no_used";
+		}
+
+		return this.___call({title:"open", data:{
+			logicalName: logicalName,
+			versionsRequired: parseInt(version),
+			appHandle: parseInt(appHandle),
+			appId: appId?appId:"no_used", 
+			traceLevel: traceLevel,
+			timeOut: timeOut
+		}});
+	},
+	getDevObject: function(service) {
+		if(!this.services.hasOwnProperty(service)) {
+			return undefined;
+		}
+		var cls = this.services[service];
+		switch(cls) {
+			case "PTR":
+				return new XfsPtr(service);
+			default:
+				console.error('Unknow device class', cls);
+		}
+	},
+	preprocessor: function(title, message) {
+		if(title=="open") {
+			var msg = JSON.parse(message.substring(5));
+			this.services[msg.service] = msg.class;
+			return;
+		}
+
+		if(title=="open.complete") {
+			var msg = JSON.parse(message.substring(5));
+			msg.class = this.services[msg.service];
+			message= "data:" + JSON.stringify(msg);
+			return;
+		}
+	},
+	services: {}
 }
 
 Object.defineProperty(__XfsMgr.prototype, "traceLevel", {
@@ -73,118 +139,52 @@ Object.defineProperty(__XfsMgr.prototype, "timeOut", {
     }
 });
 
+
+function _XfsDevice() {
+}
+
+_XfsDevice.prototype = {
+	_query: function(command, data) {
+     	return this.___call({title:"query",
+			data: {command:command, data:data}
+		});
+	},
+	_execute: function(command, data) {
+     	return this.___call({title:"execute",
+			data: {command:command, data:data}
+		});
+	},
+	lock: function() {
+     	return this.___call({title:"lock",
+			data:{}
+		});
+	},
+	ulock: function() {
+     	return this.___call({title:"ulock",
+			data:{}
+		});
+	},
+	cancelRequest: function(requestID) {
+     	return this.___call({title:"cancelRequest",
+			requestID:requestID
+		});
+	},
+	close: function() {
+     	return this.___call({title:"close",
+			data:{}
+		});		
+	},
+	register: function(eventClass) {
+     	return this.___call({title:"register",
+			eventClass:eventClass
+		});		
+	},
+	deregister: function(eventClass) {
+     	return this.___call({title:"deregister",
+			eventClass:eventClass
+		});		
+	},
+};
+
 exports.XfsMgr = inhertits(__XfsMgr, _XfsMgr);
-
-/*
-function XfsMgr(traceLevel, timeOut){
-	__XfsMgr.apply(this, Array.prototype.slice.call(arguments));
-
-	this.init = function () {
-		//console.log(__XfsMgr.prototype.__call);
-		__XfsMgr.prototype.__call.apply(this, ['initialize', "{}"]);
-		//this.__call('initialize', "{}");
-	}
-
-	this.start = function(low, high) {
-		console.log(this.__call);
-		result = this.__call("start", low<<16|high);
-		//this.traceLevel = this._traceLevel;
-		//this.timeOut = this._timeOut;
-		return result;
-	}
-
-	this.cleanUp=function() {
-		result = this.__call("cleanUp", low<<16|high);
-	}
-
-	this.open=function(dev) {
-		
-	}
-
-	set traceLevel(level) {
-		this._traceLevel = level;
-		this._xfs._setTraceLevel(level);
-		return level;
-	}
-
-	get traceLevel() {
-		return this._traceLevel;
-	}
-	
-	set timeOut(timeOut) {
-		this._timeOut = timeOut;
-		this._xfs._setTimeOut(timeOut);
-		return timeOut;
-	}
-
-	get timeOut() {
-		return this._timeOut;
-	}
-
-};
-
-function XfsDevice(logicalName, appName, level, timeout) {
-
-	this._logicalName = logicalName;
-	this._appName = appName;
-
-	this._traceLevel = level | "WFS_TRACE_ALL_SPI";
-	this._timeOut = timeOut | 5000;
-
-	this._xfs = new _XfsDevice();
-
-	// event: opened;
-	this.open = function(high, low) {
-		return this._xfs._open(this._logicalName, this._appName, high, low, this._traceLevel, this._timeOut);
-	}
-
-	this.query = function(title, data) {
-		this._xfs._query(title, data);
-	}
-
-	this.execute = function(title, data) {
-		this._xfs._execute(title, data);
-	}
-
-	this.lock = function() {
-		this._xfs._lock();
-	}
-
-	this.unlock = function() {
-		this._xfs._unlock();
-	}
-
-	this.cancel = function(id) {
-		this._xfs._cancel(id);
-	}
-/*
-	set traceLevel(level) {
-		this._traceLevel = level;
-		this._xfs._setTraceLevel(level);
-		return level;
-	}
-
-	get traceLevel() {
-		return this._traceLevel;
-	}
-	
-	set timeOut(timeOut) {
-		this._timeOut = timeOut;
-		this._xfs._setTimeOut(timeOut);
-		return timeOut;
-	}
-
-	get timeOut() {
-		return this._timeOut;
-	}
-
-};
-
-
-//exports.XfsMgr = mixin(__XfsMgr, _XfsMgr);
-//XfsDevice = mixin(__XfsDevice, _XfsDevice);
-XfsDevice = mixin(__XfsDevice, XfsDevice);
-XfsMgr = mixin(__XfsMgr, XfsMgr);
-
-exports.XfsMgr = XfsMgr;
-*/
+var XfsDevice = inhertits(__XfsDevice, _XfsDevice);

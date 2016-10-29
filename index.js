@@ -45,15 +45,32 @@ messaging.prototype = {
   _post: function(evt) {
   var args = arguments;
   setImmediate(()=> {
+    if(this.preProcessor) {
+      this.preProcessor(args[0], args[1]);
+    }
+
     this._logger(args[0], args[1]);
     this.emit.apply(this, args);
+
+    if(this.postProcessor) {
+      this.postProcessor(args[0], args[1]);
+    }
   });
 },
 
  _send:function(evt) {
-    this._logger(arguments[0], arguments[1]);
-    this.emit.apply(this, arguments);
- }
+    var args = arguments;
+    if(this.preProcessor) {
+      this.preProcessor(args[0], args[1]);
+    }
+
+    this._logger(args[0], args[1]);
+    this.emit.apply(this, args);
+
+    if(this.postProcessor) {
+      this.postProcessor(args[0], args[1]);
+    }
+  }
 }
 
 function load (module) {

@@ -24,13 +24,14 @@ typedef LPVOID (*Translate2XFS)(const json&);
 //##############################################################################
 struct Translator {
 	std::string strCommand;
+	std::string strCodeName;
 	Translate2XFS fpToXFS;
 	Translate2JS fpToJS;
 };
 
 //##############################################################################
 //##############################################################################
-std::string XSJ_SystemTime2String(const SYSTEMTIME *st) {
+inline std::string XSJ_SystemTime2String(const SYSTEMTIME *st) {
 	std::stringstream oss;
 	oss << st->wYear << ":" 
 	<< std::setw(2) << std::setfill('0') << st->wMonth << ":" 
@@ -45,7 +46,7 @@ std::string XSJ_SystemTime2String(const SYSTEMTIME *st) {
 
 //##############################################################################
 //##############################################################################
-std::vector<std::string> XSJ_List2Strings(LPCSTR pList) {
+inline std::vector<std::string> XSJ_List2Strings(LPCSTR pList) {
 	std::vector<std::string> list;
 	LPCSTR pp = pList;
 	while(pp && *pp) {
@@ -211,7 +212,7 @@ json XSJ_ListArrayValue(const T* p, R(*mc)(const S), std::string(*ic)(const W), 
 
 //#############################################################################
 //#############################################################################
-char* HexToBytes(const std::string& hex, char* pData) {
+inline char* HexToBytes(const std::string& hex, char* pData) {
 	std::vector<char> bytes;
 
 	for (unsigned int i = 0; i < hex.length(); i += 2) {
@@ -290,7 +291,7 @@ protected:
 
 //#############################################################################
 //#############################################################################
-LPSTR XSJStringArrayToNullTerminated(std::vector<std::string> fields, XSJAllocator* a) {
+inline LPSTR XSJStringArrayToNullTerminated(std::vector<std::string> fields, XSJAllocator* a) {
 	int totalSize = 0;
 	for(auto it=fields.begin(); it != fields.end(); it++) {
 		totalSize += (int)(*it).length() + 1;
@@ -310,7 +311,7 @@ LPSTR XSJStringArrayToNullTerminated(std::vector<std::string> fields, XSJAllocat
 
 //#############################################################################
 //#############################################################################
-LPSTR XSJDecodePtrFields(const json &j, XSJAllocator* a) {
+inline LPSTR XSJDecodePtrFields(const json &j, XSJAllocator* a) {
 	std::vector<std::string> fields;
 
 	for (auto it = j.begin(); it != j.end(); ++it) {

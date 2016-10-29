@@ -165,11 +165,11 @@ function xfsSolicited(p) {
 		var result = "";
 		var cd = this.buildCallData();;
 		if(this.type == "inf") {
-			result += util.format("\t\tsuper.query('%s', %s);\n", 
+			result += util.format("\t\treturn this._query('%s', %s);\n", 
 				this.tag, cd);
 		}
 		else {
-			result += util.format("\t\tsuper.execute('%s', %s);\n", 
+			result += util.format("\t\treturn this._execute('%s', %s);\n", 
 				this.tag, cd);
 		}
 		return result;
@@ -433,7 +433,7 @@ exports.data_structure = class {
 
 	makeTranslators(gs) {
 		var result = "";
-		result += "Translator* GetTranslators(int& size) {\n";
+		result += "inline Translator* GetTranslators(int& size) {\n";
 		result += "\tstatic Translator transators[] = {\n";
 
 		gs.map((item)=> {
@@ -458,7 +458,8 @@ exports.data_structure = class {
 				fpToXFS = util.format("([](const json& j){ return (LPVOID)XSJTranslate<%s>(j, nullptr); })", item.struct);
 			}
 
-			result += util.format("\t\t{\n\t\t\t\"%s\", \n\t\t\t%s, \n\t\t\t%s\n\t\t},\n", item.command, fpToXFS, fpToJS);
+			result += util.format("\t\t{\n\t\t\t\"%s\", \n\t\t\t\"%s\", \n\t\t\t%s, \n\t\t\t%s\n\t\t},\n", 
+				item.command, item.name, fpToXFS, fpToJS);
 
 		});
 
@@ -496,7 +497,7 @@ exports.data_structure = class {
 		}
 		result += "//##############################################################################\n";
 		result += "template <>\n";
-		result += util.format("json XSJTranslate(const %s* p) {\n", this.struct);
+		result += util.format("inline json XSJTranslate(const %s* p) {\n", this.struct);
 		result += "\tjson j;\n";
 		result += "\tif(!p) return j;\n\n";
 
@@ -644,7 +645,7 @@ exports.data_structure = class {
 		}
 		result += "//##############################################################################\n";
 		result += "template <>\n";
-		result += util.format("%s* XSJTranslate(const json& j, XSJAllocator* a) {\n", this.struct);
+		result += util.format("inline %s* XSJTranslate(const json& j, XSJAllocator* a) {\n", this.struct);
 		result += "\tXSJAllocator allocator;\n";
 		result += "\tif(nullptr==a){\n\t\ta = &allocator;\n\t}\n";
 		result += util.format("\tauto p = (%s*)a->Get(sizeof(%s));\n\n", this.struct, this.struct);

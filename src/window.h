@@ -9,6 +9,7 @@
 #include <sstream>
 #include <queue>
 #include <uv.h>
+#include <map>
 
 //#############################################################################
 //#############################################################################
@@ -24,12 +25,42 @@ public:
 	LPVOID			lpData;
 };
 
+//#############################################################################
+//#############################################################################
 #define HSERVICE_MGR	HSERVICE(-1)
-#define WM_NODE2WIN		(WM_USER + 10)
+#define WM_NODE2WIN		(WM_USER + 30)
+#define WM_NODE2WINDEV	(WM_USER + 31)
+
+//#############################################################################
+//#############################################################################
+#define XFSProcessorEntry(evt, proc)			\
+	case evt:									\
+	if (!pData) {								\
+		if(Window::m_lpInstance) {				\
+			Window::m_lpInstance->proc(pData);	\
+		}										\
+		WFSFreeResult(pData);					\
+	}											\
+	break
+
+//#############################################################################
+//#############################################################################
+#define XFSDeviceProcessorEntry(evt, proc)		\
+	case evt:									\
+	if (!pDevice) {								\
+			pDevice->proc(pData);				\
+		}										\
+	WFSFreeResult(pData);						\
+	break
 
 //#############################################################################
 //#############################################################################
 class Log;
+class XfsDevice;
+
+//#############################################################################
+//#############################################################################
+#define DeclareXFSProcessor(evt, proc) void proc(LPWFSRESULT pData);
 
 //#############################################################################
 //#############################################################################
@@ -40,6 +71,12 @@ public:
   static bool IsNodeThread();
   v8::Local<v8::Value> PostNodeEvent(const std::string& title, const std::string& data);
   v8::Local<v8::Value> SendNodeEvent(const std::string& title, const std::string& data);
+  DeclareXFSProcessor(WFS_OPEN_COMPLETE, OpenComplete);
+  DeclareXFSProcessor(WFS_EXECUTE_EVENT, ExecuteEvent);
+  DeclareXFSProcessor(WFS_SERVICE_EVENT, ServiceEvent);
+  DeclareXFSProcessor(WFS_USER_EVENT, UserEvent);
+  DeclareXFSProcessor(WFS_SYSTEM_EVENT, SystemEvent);
+  DeclareXFSProcessor(WFS_TIMER_EVENT, TimerEvent);
 
 private:
   explicit Window(const Nan::FunctionCallbackInfo<v8::Value>& info);
@@ -61,6 +98,7 @@ private:
 
   friend LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
   friend class Log;
+  friend class XfsDevice;
 protected:
   uv_loop_t                  *m_loop;
   uv_async_t                  m_async;
@@ -74,6 +112,7 @@ protected:
 
   static DWORD				  m_nodeThread;
   static Window*              m_lpInstance;
+  std::map<HSERVICE, XfsDevice*> m_services;
 };
 
 //#############################################################################
@@ -116,10 +155,10 @@ public:
 
 //#############################################################################
 //#############################################################################
-#define CLOG		(Log("log"))
+//#define CLOG		(Log("log"))   // app
 #define CWAR		(Log("warn"))
 #define CINF		(Log("info"))
-//#define CTRAC		(Log("trace"))
+//#define CTRAC		(Log("trace")) // app
 #define CERR		(Log("error"))
 #define CASS(c)		(Log("assert", (c), (#c)))
 

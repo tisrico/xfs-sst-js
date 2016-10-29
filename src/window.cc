@@ -2,9 +2,15 @@
 #include <uv.h>
 #include "xsj-trans.h"
 #include "xfsapi.h"
-
+#include "common.h"
 #include "json.hpp"
+#include "xfsdevice.h"
+
 using json = nlohmann::json;
+
+//#############################################################################
+//#############################################################################
+#define DefineXFSProcessor(evt, proc) void Window::proc(LPWFSRESULT pData)
 
 //#############################################################################
 //#############################################################################
@@ -16,7 +22,7 @@ DWORD Window::m_nodeThread = GetCurrentThreadId();
 //#############################################################################
 Window::Window(const Nan::FunctionCallbackInfo<v8::Value>& info):
 	m_this(v8::Isolate::GetCurrent(), info.Holder()), m_sarted(false), 
-	m_hwnd(nullptr), m_traceLevel(0), m_timeOut(10000), m_loop(nullptr),
+	m_hwnd(nullptr), m_traceLevel(WFS_TRACE_API), m_timeOut(10000), m_loop(nullptr),
 	m_xfsStarted(false) {
 }
 
@@ -173,9 +179,20 @@ void Window::WinMessagePump(LPVOID p) {
 //#############################################################################
 //#############################################################################
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+	LPWFSRESULT pData = (LPWFSRESULT)lParam;
+	XfsDevice* pDevice = nullptr;
+	if (pData && Window::m_lpInstance) {
+		auto it = Window::m_lpInstance->m_services.find(pData->hService);
+		if (it != Window::m_lpInstance->m_services.end()) {
+			pDevice = it->second;
+		}
+	}
+
 	switch (uMsg) {
 	case WM_CREATE:
-		Window::m_lpInstance->SendToNode(HSERVICE_MGR, "initialize", "", Window::m_lpInstance);
+		if (Window::m_lpInstance) {
+			Window::m_lpInstance->SendToNode(HSERVICE_MGR, "initialize", "", Window::m_lpInstance);
+		}
 		break;
 
 	case WM_DESTROY:
@@ -204,6 +221,34 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 		delete pmsg;
 	}
 
+	case WM_NODE2WINDEV: {
+		auto pmsg = (InterThreadMessage*)wParam;
+		if (pmsg) {
+			CINF << pmsg->strTitle << ":" << pmsg->strData;
+		}
+		if (pmsg && pmsg->hService != HSERVICE_MGR &&
+			pmsg->lpData != nullptr) {
+			XfsDevice* pDevice = (XfsDevice*)pmsg->lpData;
+			pDevice->ProcessV8Message(pmsg->strTitle, pmsg->strData);
+		}
+
+		delete pmsg;
+	}
+
+	XFSDeviceProcessorEntry(WFS_CLOSE_COMPLETE, CloseComplete);
+	XFSDeviceProcessorEntry(WFS_LOCK_COMPLETE, LockComplete);
+	XFSDeviceProcessorEntry(WFS_UNLOCK_COMPLETE, UnlockComplete);
+	XFSDeviceProcessorEntry(WFS_REGISTER_COMPLETE, RegisterComplete);
+	XFSDeviceProcessorEntry(WFS_DEREGISTER_COMPLETE, DeregisterComplete);
+	XFSDeviceProcessorEntry(WFS_GETINFO_COMPLETE, GetInfoComplete);
+	XFSDeviceProcessorEntry(WFS_EXECUTE_COMPLETE, ExecuteComplete);
+
+	XFSProcessorEntry(WFS_OPEN_COMPLETE, OpenComplete);
+	XFSProcessorEntry(WFS_EXECUTE_EVENT, ExecuteEvent);
+	XFSProcessorEntry(WFS_SERVICE_EVENT, ServiceEvent);
+	XFSProcessorEntry(WFS_USER_EVENT, UserEvent);
+	XFSProcessorEntry(WFS_SYSTEM_EVENT, SystemEvent);
+	XFSProcessorEntry(WFS_TIMER_EVENT, TimerEvent);
 	return 0;
 
 	}
@@ -227,11 +272,11 @@ void Window::Call(const Nan::FunctionCallbackInfo<v8::Value>& info) {
 	std::string title(*Nan::Utf8String(info[0]));
 	std::string data(*Nan::Utf8String(info[1]));
 
-	CLOG << "Call " << title << ":" << data;
+	CINF << "Call " << title << " " << data;
 
 	Window* obj = ObjectWrap::Unwrap<Window>(info.Holder());
 	auto ret = obj->Command(title, data);
-	info.GetReturnValue().Set(Nan::New(1));
+	info.GetReturnValue().Set(ret);
 }
 
 //#############################################################################
@@ -258,12 +303,12 @@ v8::Local<v8::Value> Window::Command(const std::string & title, const std::strin
 	}
 
 	//getTimeOut
-	if ("getTraceLevel" == title) {
+	if ("getTimeOut" == title) {
 		return Nan::New((int)m_timeOut);
 	}
 
 	//setTimeOut
-	if ("setTraceLevel" == title) {
+	if ("setTimeOut" == title) {
 		m_timeOut = atol(data.c_str());
 		return Nan::New((int)m_timeOut);
 	}
@@ -295,6 +340,47 @@ void Window::ProcessV8Message(InterThreadMessage* pmsg) {
 	}
 
 	json j = json::parse(pmsg->strData);
+
+	// open
+	if (pmsg->strTitle == "open") {
+		if (!m_xfsStarted) {
+			SendToNode(HSERVICE_MGR, "open.error", "xfs not sarted", this);
+			return;
+		}
+
+		DWORD dwVersionsRequired = j["versionsRequired"];
+		std::string logicalName = j["logicalName"];
+		HAPP appHandle = (HAPP)((int)j["appHandle"]);
+		std::string appId = j["appId"];
+		DWORD traceLevel = GetXfsTraceLevelId(j["traceLevel"]);
+		DWORD timeOut = j["timeOut"];
+
+		WFSVERSION srvcVersion;
+		WFSVERSION spiVersion;
+		HSERVICE   hService;
+		REQUESTID requestID;
+
+		HRESULT hr = WFSAsyncOpen(const_cast<char *>(logicalName.c_str()), appHandle,
+			(appId=="_no_used")?NULL:const_cast<char *>(appId.c_str()), traceLevel, timeOut,
+			&hService, m_hwnd, dwVersionsRequired, &srvcVersion, &spiVersion, &requestID);
+
+		if (WFS_SUCCESS != hr) {
+			SendToNode(HSERVICE_MGR, "open.error", GetXfsErrorCodeName(hr), this);
+			return;
+		}
+
+		json jr;
+		j["service"] = (int)hService;
+		j["serviceVersion"] = XSJTranslate(&srvcVersion);
+		j["spiVersion"] = XSJTranslate(&spiVersion);
+		j["requestID"] = requestID;
+		j["class"] = XFSLSKey(logicalName, "class");
+
+		SendToNode(HSERVICE_MGR, "open", j.dump(), this);
+		return;
+	}
+
+	// start
 	if (pmsg->strTitle == "start") {
 		if (m_xfsStarted) {
 			SendToNode(HSERVICE_MGR, "start.error", "xfs sarted", this);
@@ -315,6 +401,7 @@ void Window::ProcessV8Message(InterThreadMessage* pmsg) {
 		return;
 	}
 
+	// cleanUp
 	if (pmsg->strTitle == "cleanUp") {
 		if (!m_xfsStarted) {
 			SendToNode(HSERVICE_MGR, "cleanUp.error", "xfs not sarted", this);
@@ -331,6 +418,7 @@ void Window::ProcessV8Message(InterThreadMessage* pmsg) {
 		SendToNode(HSERVICE_MGR, "cleanUp", "", this);
 	}
 
+	// uninitialize
 	if (pmsg->strTitle == "uninitialize") {
 		if (m_xfsStarted) {
 			SendToNode(HSERVICE_MGR, "uninitialize.error", "xfs is running.", this);
@@ -339,6 +427,35 @@ void Window::ProcessV8Message(InterThreadMessage* pmsg) {
 
 		PostMessage(((Window*)pmsg->lpData)->m_hwnd, WM_CLOSE, NULL, NULL);
 		SendToNode(HSERVICE_MGR, "uninitialize", "", this);
+	}
+
+	// createAppHandle
+	if ("createAppHandle" == pmsg->strTitle) {
+		HAPP handle;
+		HRESULT hr = WFSCreateAppHandle(&handle);
+
+		if (WFS_SUCCESS != hr) {
+			SendToNode(HSERVICE_MGR, "createAppHandle.error", GetXfsErrorCodeName(hr), this);
+			return;
+		}
+
+		auto j = XSJTranslate(handle);
+		SendToNode(HSERVICE_MGR, "createAppHandle", j.dump(), this);
+		return;
+	}
+
+	// destroyAppHandle
+	if ("destroyAppHandle" == pmsg->strTitle) {
+		HAPP handle = (HAPP) atol(pmsg->strData.c_str());
+		HRESULT hr = WFSDestroyAppHandle(handle);
+
+		if (WFS_SUCCESS != hr) {
+			SendToNode(HSERVICE_MGR, "destroyAppHandle.error", GetXfsErrorCodeName(hr), this);
+			return;
+		}
+
+		SendToNode(HSERVICE_MGR, "destroyAppHandle", "", this);
+		return;
 	}
 }
 
@@ -370,4 +487,42 @@ v8::Local<v8::Value> Window::SendNodeEvent(const std::string & title, const std:
 	};
 
 	return Nan::MakeCallback(Nan::New(m_this), "_send", 2, argv);
+}
+
+//#############################################################################
+//#############################################################################
+DefineXFSProcessor(WFS_OPEN_COMPLETE, OpenComplete) {
+	//pData
+	json j = XSJTranslate(pData);
+	SendToNode(HSERVICE_MGR, "open.complete", j.dump(), this);
+}
+
+//#############################################################################
+//#############################################################################
+DefineXFSProcessor(WFS_EXECUTE_EVENT, ExecuteEvent) {
+
+}
+
+//#############################################################################
+//#############################################################################
+DefineXFSProcessor(WFS_SERVICE_EVENT, ServiceEvent) {
+
+}
+
+//#############################################################################
+//#############################################################################
+DefineXFSProcessor(WFS_USER_EVENT, UserEvent) {
+
+}
+
+//#############################################################################
+//#############################################################################
+DefineXFSProcessor(WFS_SYSTEM_EVENT, SystemEvent) {
+
+}
+
+//#############################################################################
+//#############################################################################
+DefineXFSProcessor(WFS_TIMER_EVENT, TimerEvent) {
+
 }

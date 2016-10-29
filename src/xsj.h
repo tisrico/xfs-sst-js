@@ -22,7 +22,7 @@ struct XSJCallData {
 
 //##############################################################################
 //##############################################################################
-Translator* findTranslator(const std::string cmd, bool toXfs) {
+inline Translator* findTranslator(const std::string cmd, bool toXfs) {
 	int size = 0;
 	Translator* pTranslator = GetTranslators(size);
 
@@ -44,7 +44,7 @@ Translator* findTranslator(const std::string cmd, bool toXfs) {
 
 //##############################################################################
 //##############################################################################
-bool JS2XFS(const json& j, XSJCallData& cd) {
+inline bool JS2XFS(const json& j, XSJCallData& cd) {
 	if (j.find("service") == j.end() || j.find("command") == j.end() ||
 		j.find("timeout") == j.end() ||	j.find("data") == j.end()) {
 		return false;
@@ -76,9 +76,9 @@ bool JS2XFS(const json& j, XSJCallData& cd) {
 
 //##############################################################################
 //##############################################################################
-bool XFS2JS(XSJProcssType pt, const LPWFSRESULT result, json& j) {
+inline std::string XFS2JS(XSJProcssType pt, const LPWFSRESULT result, json& j) {
 	if(result == nullptr) {
-		return false;
+		return "";
 	}
 
 	std::string strCommand;
@@ -103,5 +103,5 @@ bool XFS2JS(XSJProcssType pt, const LPWFSRESULT result, json& j) {
 		j["result"] = std::map<std::string, std::string>();
 	}
 
-	return true;
+	return pTranslator->strCodeName;
 }
