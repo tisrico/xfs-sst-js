@@ -33,26 +33,27 @@ public:
 
 //#############################################################################
 //#############################################################################
-#define XFSProcessorEntry(evt, proc)			\
-	case evt:									\
-	if (!pData) {								\
-		if(Window::m_lpInstance) {				\
-			Window::m_lpInstance->proc(pData);	\
-		}										\
-		WFSFreeResult(pData);					\
-	}											\
-	break
+#define XFSProcessorEntry(evt, proc)				\
+	case evt: {										\
+		if (pData) {								\
+			if(Window::m_lpInstance) {				\
+				Window::m_lpInstance->proc(pData);	\
+			}										\
+			WFSFreeResult(pData);					\
+		}											\
+		break;										\
+	}
 
 //#############################################################################
 //#############################################################################
 #define XFSDeviceProcessorEntry(evt, proc)		\
-	case evt:									\
-	if (!pDevice) {								\
-			pDevice->proc(pData);				\
-		}										\
-	WFSFreeResult(pData);						\
-	break
-
+	case evt: {									\
+		if (pDevice) {							\
+				pDevice->proc(pData);			\
+			}									\
+		WFSFreeResult(pData);					\
+		break;									\
+	}
 //#############################################################################
 //#############################################################################
 class Log;
@@ -86,7 +87,7 @@ private:
   static void Call(const Nan::FunctionCallbackInfo<v8::Value>& info);
   
   v8::Local<v8::Value> Command(const std::string& title, const std::string& data);
-  void ProcessV8Message(InterThreadMessage* pMessage);
+  void ProcessV8Message(InterThreadMessage* pMessage, DWORD callID);
   static void ProcessNodeMessage(InterThreadMessage* pMessage);
 
   void SendToNode(HSERVICE hService, const std::string& title, const std::string& data, LPVOID lpData);
@@ -109,6 +110,7 @@ protected:
   DWORD						  m_traceLevel;
   DWORD						  m_timeOut;
   HWND						  m_hwnd;
+  DWORD						  m_callID;
 
   static DWORD				  m_nodeThread;
   static Window*              m_lpInstance;

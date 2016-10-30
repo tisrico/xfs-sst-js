@@ -46,14 +46,14 @@ messaging.prototype = {
   var args = arguments;
   setImmediate(()=> {
     if(this.preProcessor) {
-      this.preProcessor(args[0], args[1]);
+      this.preProcessor(args);
     }
 
     this._logger(args[0], args[1]);
     this.emit.apply(this, args);
 
     if(this.postProcessor) {
-      this.postProcessor(args[0], args[1]);
+      this.postProcessor(args);
     }
   });
 },
@@ -61,14 +61,14 @@ messaging.prototype = {
  _send:function(evt) {
     var args = arguments;
     if(this.preProcessor) {
-      this.preProcessor(args[0], args[1]);
+      this.preProcessor(args);
     }
 
     this._logger(args[0], args[1]);
     this.emit.apply(this, args);
 
     if(this.postProcessor) {
-      this.postProcessor(args[0], args[1]);
+      this.postProcessor(args);
     }
   }
 }

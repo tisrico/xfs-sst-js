@@ -23,7 +23,7 @@ DWORD Window::m_nodeThread = GetCurrentThreadId();
 Window::Window(const Nan::FunctionCallbackInfo<v8::Value>& info):
 	m_this(v8::Isolate::GetCurrent(), info.Holder()), m_sarted(false), 
 	m_hwnd(nullptr), m_traceLevel(WFS_TRACE_API), m_timeOut(10000), m_loop(nullptr),
-	m_xfsStarted(false) {
+	m_xfsStarted(false), m_callID(0) {
 }
 
 //#############################################################################
@@ -188,6 +188,9 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 		}
 	}
 
+	OutputDebugString("Windows Message ....");
+	OutputDebugString(GetXfsMessageName(uMsg).c_str());
+
 	switch (uMsg) {
 	case WM_CREATE:
 		if (Window::m_lpInstance) {
@@ -215,7 +218,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 		}
 		if(pmsg && pmsg->hService == HSERVICE_MGR && 
 			pmsg->lpData == Window::m_lpInstance && Window::m_lpInstance != nullptr) {
-			Window::m_lpInstance->ProcessV8Message(pmsg);
+			Window::m_lpInstance->ProcessV8Message(pmsg, (DWORD)lParam);
 		}
 
 		delete pmsg;
@@ -230,7 +233,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 		if (pmsg && pmsg->hService != HSERVICE_MGR &&
 			pmsg->lpData != nullptr) {
 			XfsDevice* pDevice = (XfsDevice*)pmsg->lpData;
-			pDevice->ProcessV8Message(pmsg->strTitle, pmsg->strData);
+			pDevice->ProcessV8Message(pmsg->strTitle, pmsg->strData, (DWORD)lParam);
 		}
 
 		delete pmsg;
@@ -325,18 +328,19 @@ v8::Local<v8::Value> Window::Command(const std::string & title, const std::strin
 	// open, 
 	// uninitialize
 
+	int callID = m_callID++;
 	auto pmsg = new InterThreadMessage({ HSERVICE_MGR, title, data, this});
-	if (!PostMessage(m_hwnd, WM_NODE2WIN, (WPARAM)pmsg, NULL)) {
+	if (!PostMessage(m_hwnd, WM_NODE2WIN, (WPARAM)pmsg, callID)) {
 		delete pmsg;
 		return Nan::New(false);
 	}
 	
-	return Nan::New(true);
+	return Nan::New(callID);
 }
 
 //#############################################################################
 //#############################################################################
-void Window::ProcessV8Message(InterThreadMessage* pmsg) {
+void Window::ProcessV8Message(InterThreadMessage* pmsg, DWORD callID) {
 	if (!pmsg) {
 		return;
 	}
@@ -377,6 +381,7 @@ void Window::ProcessV8Message(InterThreadMessage* pmsg) {
 		j["spiVersion"] = XSJTranslate(&spiVersion);
 		j["requestID"] = requestID;
 		j["class"] = XFSLSKey(logicalName, "class");
+		j["callID"] = callID;
 
 		SendToNode(HSERVICE_MGR, "open", j.dump(), this);
 		return;
@@ -476,6 +481,7 @@ v8::Local<v8::Value> Window::PostNodeEvent(const std::string & title, const std:
 		Nan::New(title).ToLocalChecked(),
 		Nan::New(data).ToLocalChecked(),
 	};
+	OutputDebugString(data.c_str());
 
 	return Nan::MakeCallback(Nan::New(m_this), "_post", 2, argv);
 }
@@ -487,6 +493,7 @@ v8::Local<v8::Value> Window::SendNodeEvent(const std::string & title, const std:
 		Nan::New(title).ToLocalChecked(),
 		Nan::New(data).ToLocalChecked(),
 	};
+	OutputDebugString(data.c_str());
 
 	return Nan::MakeCallback(Nan::New(m_this), "_send", 2, argv);
 }
@@ -494,6 +501,7 @@ v8::Local<v8::Value> Window::SendNodeEvent(const std::string & title, const std:
 //#############################################################################
 //#############################################################################
 DefineXFSProcessor(WFS_OPEN_COMPLETE, OpenComplete) {
+	OutputDebugString("open.complete");
 	//pData
 	json j = XSJTranslate(pData);
 	SendToNode(HSERVICE_MGR, "open.complete", j.dump(), this);

@@ -1,7 +1,28 @@
 var __XfsDevice = require('bindings')('xsj').XfsDevice;
 var __XfsMgr = require('bindings')('xsj').XfsMgr;
+const util = require('util');
 
 const mixin = require('mixin');
+
+String.prototype.uncapitalize = function(pos) {
+	pos=pos?pos:1;
+
+	var result = "";
+	for(var i=0; i<pos; i++) {
+		result += this.charAt(i).toLowerCase();
+	}
+	return  result + this.slice(pos);
+}
+
+String.prototype.capitalize = function(pos) {
+	pos=pos?pos:1;
+
+	var result = "";
+	for(var i=0; i<pos; i++) {
+		result += this.charAt(i).toUpperCase();
+	}
+	return  result + this.slice(pos);
+}
 
 function inhertits(target, source) {
   for (var k in source.prototype) {
@@ -96,21 +117,28 @@ _XfsMgr.prototype = {
 				console.error('Unknow device class', cls);
 		}
 	},
-	preprocessor: function(title, message) {
-		if(title=="open") {
-			var msg = JSON.parse(message.substring(5));
+	preProcessor: function(args) {
+		if(args[0]=="open") {
+			var msg = JSON.parse(args[1]);
 			this.services[msg.service] = msg.class;
 			return;
 		}
 
-		if(title=="open.complete") {
-			var msg = JSON.parse(message.substring(5));
+		if(args[0]=="open.complete") {
+			var msg = JSON.parse(args[1]);
 			msg.class = this.services[msg.service];
-			message= "data:" + JSON.stringify(msg);
+			args[1] = {data:JSON.stringify(msg), 
+						object: makeDeviceObject(msg.class, msg.service)};
 			return;
 		}
 	},
 	services: {}
+}
+
+function makeDeviceObject(clss, id) {
+	clss = clss.toLowerCase().capitalize();
+	var code = util.format('new Xfs%s(%s)', clss, id);
+	return eval(code);
 }
 
 Object.defineProperty(__XfsMgr.prototype, "traceLevel", {
@@ -144,6 +172,15 @@ function _XfsDevice() {
 }
 
 _XfsDevice.prototype = {
+	___call: function (cd) {
+		if(typeof(cd.data) == "string") {
+			return this.__call(cd.title, cd.data);
+		}
+		else {
+			return this.__call(cd.title, JSON.stringify(cd.data));
+		}
+	},
+
 	_query: function(command, data) {
      	return this.___call({title:"query",
 			data: {command:command, data:data}
@@ -185,6 +222,15 @@ _XfsDevice.prototype = {
 		});		
 	},
 };
+
+Object.defineProperty(__XfsDevice.prototype, "service", {
+    get: function () {
+     	return this.___call({title:"getService",
+			data: ""
+		});
+    }
+});
+
 
 exports.XfsMgr = inhertits(__XfsMgr, _XfsMgr);
 var XfsDevice = inhertits(__XfsDevice, _XfsDevice);

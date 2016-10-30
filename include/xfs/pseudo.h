@@ -33,8 +33,8 @@ struct Translator {
 //##############################################################################
 inline std::string XSJ_SystemTime2String(const SYSTEMTIME *st) {
 	std::stringstream oss;
-	oss << st->wYear << ":" 
-	<< std::setw(2) << std::setfill('0') << st->wMonth << ":" 
+	oss << st->wYear << "-" 
+	<< std::setw(2) << std::setfill('0') << st->wMonth << "-" 
 	<< std::setw(2) << std::setfill('0') << st->wDay << " "
 	<< std::setw(2) << std::setfill('0') << st->wHour << ":"
 	<< std::setw(2) << std::setfill('0') << st->wMinute << ":"
