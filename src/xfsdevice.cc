@@ -15,7 +15,8 @@ Nan::Persistent<v8::Function> XfsDevice::constructor;
 //#############################################################################
 //#############################################################################
 XfsDevice::XfsDevice(const Nan::FunctionCallbackInfo<v8::Value>& info):
-	m_this(v8::Isolate::GetCurrent(), info.Holder()){
+	m_this(v8::Isolate::GetCurrent(), info.Holder()), 
+	m_traceLevel(WFS_TRACE_API), m_timeOut(10000) {
 }
 
 //#############################################################################
@@ -116,8 +117,10 @@ v8::Local<v8::Value> XfsDevice::Command(const std::string& title, const std::str
 //#############################################################################
 void XfsDevice::ProcessV8Message(const std::string& title, const std::string& data) {
 
+	REQUESTID rid = 0;
+	json j, jr;
+
 	if ("query" == title) {
-		json j, jr;
 		XSJCallData cd;
 
 		j.parse(data.c_str());
@@ -125,54 +128,141 @@ void XfsDevice::ProcessV8Message(const std::string& title, const std::string& da
 
 		if (JS2XFS(j, cd)) {
 			REQUESTID rid = 0;
-			HRESULT hr = WFSAsyncGetInfo(m_service, cd.dwCommand, cd.lpData, cd.dwTimeout,
-				Window::m_lpInstance->m_hwnd, &rid);
+			HRESULT hr = WFSAsyncGetInfo(m_service, cd.dwCommand, cd.lpData,
+				cd.dwTimeout, Window::m_lpInstance->m_hwnd, &rid);
 
 			jr["requestId"] = rid;
 
 			if (hr == WFS_SUCCESS) {
-				Window::m_lpInstance->SendToNode(m_service, "query", j.dump(), this);
+				Window::m_lpInstance->SendToNode(m_service, "query", jr.dump(), this);
 			}
 			else {
 				jr["result"] = GetXfsErrorCodeName(hr);
-				Window::m_lpInstance->SendToNode(m_service, "query.error", j.dump(), this);
+				Window::m_lpInstance->SendToNode(m_service, "query.error", jr.dump(), this);
 			}
 		}
 		else {
 			jr["result"] = "error";
-			Window::m_lpInstance->SendToNode(m_service, "query.error", j.dump(), this);
+			Window::m_lpInstance->SendToNode(m_service, "query.error", jr.dump(), this);
 		}
 
 		return;
 	}
 
 	if ("execute" == title) {
-		json j, jr;
 		XSJCallData cd;
 
 		j.parse(data.c_str());
-		jr["callId"] = j["callId"];;
+		jr["callId"] = j["callId"];
 
 		if (JS2XFS(j, cd)) {
-			REQUESTID rid = 0;
-			HRESULT hr = WFSAsyncExecute(m_service, cd.dwCommand, cd.lpData, cd.dwTimeout,
-				Window::m_lpInstance->m_hwnd, &rid);
+			HRESULT hr = WFSAsyncExecute(m_service, cd.dwCommand, cd.lpData, 
+				cd.dwTimeout, Window::m_lpInstance->m_hwnd, &rid);
 
 			jr["requestId"] = rid;
 
 			if (hr == WFS_SUCCESS) {
-				Window::m_lpInstance->SendToNode(m_service, "execute", j.dump(), this);
+				Window::m_lpInstance->SendToNode(m_service, "execute", jr.dump(), this);
 			}
 			else {
 				jr["result"] = GetXfsErrorCodeName(hr);
-				Window::m_lpInstance->SendToNode(m_service, "execute.error", j.dump(), this);
+				Window::m_lpInstance->SendToNode(m_service, "execute.error", jr.dump(), this);
 			}
 		}
 		else {
 			jr["result"] = "error";
-			Window::m_lpInstance->SendToNode(m_service, "execute.error", j.dump(), this);
+			Window::m_lpInstance->SendToNode(m_service, "execute.error", jr.dump(), this);
 		}
 
+		return;
+	}
+
+	if ("lock" == title) {
+		jr["callId"] = j["callId"];;
+		DWORD timeOut = j["timeOut"];
+		HRESULT hr = WFSAsyncLock(m_service, timeOut, Window::m_lpInstance->m_hwnd, &rid);
+		if (hr == WFS_SUCCESS) {
+			Window::m_lpInstance->SendToNode(m_service, "lock", jr.dump(), this);
+		}
+		else {
+			jr["result"] = GetXfsErrorCodeName(hr);
+			Window::m_lpInstance->SendToNode(m_service, "lock.error", jr.dump(), this);
+		}
+		return;
+	}
+
+	if ("unlock" == title) {
+		HRESULT hr = WFSAsyncUnlock(m_service, Window::m_lpInstance->m_hwnd, &rid);
+
+		jr["callId"] = j["callId"];
+		if (hr == WFS_SUCCESS) {
+			Window::m_lpInstance->SendToNode(m_service, "unlock", j.dump(), this);
+		}
+		else {
+			jr["result"] = GetXfsErrorCodeName(hr);
+			Window::m_lpInstance->SendToNode(m_service, "unlock.error", jr.dump(), this);
+		}
+		return;
+	}
+
+	if ("cancelRequest" == title) {
+		rid = j["cancelRequest"];
+		HRESULT hr = WFSCancelAsyncRequest(m_service, rid);
+
+		jr["result"] = GetXfsErrorCodeName(hr);
+		jr["callId"] = j["callId"];
+
+		if (hr == WFS_SUCCESS) {
+			Window::m_lpInstance->SendToNode(m_service, "cancelRequest", jr.dump(), this);
+		}
+		else {
+			Window::m_lpInstance->SendToNode(m_service, "cancelRequest.error", jr.dump(), this);
+		}
+		return;
+	}
+
+	if ("close" == title) {
+		HRESULT hr = WFSAsyncClose(m_service, Window::m_lpInstance->m_hwnd, &rid);
+		jr["result"] = GetXfsErrorCodeName(hr);
+		jr["callId"] = j["callId"];
+
+		if (hr == WFS_SUCCESS) {
+			Window::m_lpInstance->SendToNode(m_service, "close", jr.dump(), this);
+		}
+		else {
+			Window::m_lpInstance->SendToNode(m_service, "close.error", jr.dump(), this);
+		}
+		return;
+	}
+
+	if ("register" == title) {
+		DWORD cls = GetXfsEventClassId(j["eventClass"]);
+		HRESULT hr = WFSRegister(m_service, cls, Window::m_lpInstance->m_hwnd);
+
+		jr["result"] = GetXfsErrorCodeName(hr);
+		jr["callId"] = j["callId"];
+
+		if (hr == WFS_SUCCESS) {
+			Window::m_lpInstance->SendToNode(m_service, "register", jr.dump(), this);
+		}
+		else {
+			Window::m_lpInstance->SendToNode(m_service, "register.error", jr.dump(), this);
+		}
+		return;
+	}
+
+	if ("deregister" == title) {
+		DWORD cls = GetXfsEventClassId(j["eventClass"]);
+		HRESULT hr = WFSDeregister(m_service, cls, Window::m_lpInstance->m_hwnd);
+
+		jr["result"] = GetXfsErrorCodeName(hr);
+		jr["callId"] = j["callId"];
+		if (hr == WFS_SUCCESS) {
+			Window::m_lpInstance->SendToNode(m_service, "deregister", jr.dump(), this);
+		}
+		else {
+			Window::m_lpInstance->SendToNode(m_service, "deregister.error", jr.dump(), this);
+		}
 		return;
 	}
 }

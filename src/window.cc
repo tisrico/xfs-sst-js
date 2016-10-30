@@ -219,6 +219,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 		}
 
 		delete pmsg;
+		break;
 	}
 
 	case WM_NODE2WINDEV: {
@@ -233,6 +234,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 		}
 
 		delete pmsg;
+		break;
 	}
 
 	XFSDeviceProcessorEntry(WFS_CLOSE_COMPLETE, CloseComplete);
