@@ -46,18 +46,20 @@ inline Translator* findTranslator(const std::string cmd, bool toXfs) {
 //##############################################################################
 inline bool JS2XFS(const json& j, XSJCallData& cd) {
 	if (j.find("service") == j.end() || j.find("command") == j.end() ||
-		j.find("timeout") == j.end() ||	j.find("data") == j.end()) {
+		j.find("timeOut") == j.end() ||	j.find("data") == j.end()) {
 		return false;
 	}
 
 	if(!j["service"].is_number() || !j["command"].is_string() ||
-		!j["timeout"].is_number() || !j["data"].is_object()) {
+		!j["timeOut"].is_number() || !j["data"].is_object()) {
 		return false;
 	}
 
 	std::string strCommand = j["command"];
 	cd.hService = j["service"];
-	cd.dwTimeout = j["timeout"];
+	cd.dwTimeout = j["timeOut"];
+	OutputDebugString("xxxxxxxxxx");
+	OutputDebugString(strCommand.c_str());
 	cd.dwType = (strCommand.find("XFS_INF") == 0)?XPT_Query:XPT_Execute;
 	if(cd.dwType == XPT_Query) {
 		cd.dwCommand = GetXfsInfoCmdId(strCommand);
@@ -69,6 +71,9 @@ inline bool JS2XFS(const json& j, XSJCallData& cd) {
 	auto pTranslator = findTranslator(strCommand, true);
 	if(pTranslator) {
 		cd.lpData = pTranslator->fpToXFS(j["data"]);
+	}
+	else {
+		cd.lpData = nullptr;
 	}
 
 	return true;

@@ -72,6 +72,7 @@ public:
   static bool IsNodeThread();
   v8::Local<v8::Value> PostNodeEvent(const std::string& title, const std::string& data);
   v8::Local<v8::Value> SendNodeEvent(const std::string& title, const std::string& data);
+  void AddDevice(HSERVICE hService, XfsDevice* pDevice);
   DeclareXFSProcessor(WFS_OPEN_COMPLETE, OpenComplete);
   DeclareXFSProcessor(WFS_EXECUTE_EVENT, ExecuteEvent);
   DeclareXFSProcessor(WFS_SERVICE_EVENT, ServiceEvent);

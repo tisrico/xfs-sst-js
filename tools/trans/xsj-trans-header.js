@@ -203,7 +203,7 @@ _XfsDevice.prototype = {
 	},
 	cancelRequest: function(requestID) {
      	return this.___call({title:"cancelRequest",
-			requestID:requestID
+			data: {requestID:requestID}
 		});
 	},
 	close: function() {
@@ -213,12 +213,12 @@ _XfsDevice.prototype = {
 	},
 	register: function(eventClass) {
      	return this.___call({title:"register",
-			eventClass:eventClass
+			data: {eventClass:eventClass}
 		});		
 	},
 	deregister: function(eventClass) {
      	return this.___call({title:"deregister",
-			eventClass:eventClass
+			data: {eventClass:eventClass}
 		});		
 	},
 };

@@ -17,7 +17,7 @@ public:
   v8::Local<v8::Value> PostNodeEvent(const std::string& title, const std::string& data);
   v8::Local<v8::Value> SendNodeEvent(const std::string& title, const std::string& data);
   v8::Local<v8::Value> XfsDevice::Command(const std::string& title, const std::string& data);
-  void ProcessV8Message(const std::string& title, const std::string& data);
+  void ProcessV8Message(const std::string& title, const std::string& data, DWORD callID);
 
   DeclareXFSProcessor(WFS_CLOSE_COMPLETE, CloseComplete);
   DeclareXFSProcessor(WFS_LOCK_COMPLETE, LockComplete);
@@ -41,6 +41,7 @@ protected:
   HSERVICE						m_service;
   DWORD							m_traceLevel;
   DWORD							m_timeOut;
+  DWORD							m_callID;
 };
 
 #endif

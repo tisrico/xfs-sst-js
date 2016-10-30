@@ -75,7 +75,8 @@ function xfsDevice(c) {
 	this.build = function() {
 		var processed = [];
 		var result = "";
-		result += util.format("class Xfs%s extends XfsDevice {\n", this.deviceClass.capitalize());
+		result += util.format("function _Xfs%s() {\n}\n_Xfs%s.prototype={\n", 
+			this.deviceClass.capitalize(), this.deviceClass.capitalize());
 
 		for(var x in this.solicited) {
 			result += this.solicited[x].build(processed);
@@ -87,9 +88,10 @@ function xfsDevice(c) {
 		});
 
 		result += "};\n"
-		//result += util.format("exports.Xfs%s=Xfs%s;\n", this.deviceClass.capitalize(), 
-		//	this.deviceClass.capitalize());
-
+		result += util.format("var Xfs%s=inhertits(XfsDevice, _Xfs%s);\n", 
+			this.deviceClass.capitalize(), this.deviceClass.capitalize());
+		result += util.format("exports.Xfs%s = Xfs%s;\n", 
+			this.deviceClass.capitalize(), this.deviceClass.capitalize());
 		return result;
 	}
 }
@@ -124,9 +126,9 @@ function xfsSolicited(p) {
 		var params = this.buildParams();
 		var body = this.buildCallBody();
 
-		var result = util.format("\t%s(%s){\n", this.name, params);
+		var result = util.format("\t%s: function(%s){\n", this.name, params);
 		result += body;	
-		result += "\t}\n\n";
+		result += "\t},\n\n";
 		return result;
 	}
 

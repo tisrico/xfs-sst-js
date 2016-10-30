@@ -110,6 +110,8 @@ void Window::OnNodeMessage(uv_async_t *handle) {
 
 }
 
+//#############################################################################
+//#############################################################################
 void Window::ProcessNodeMessage(InterThreadMessage* pMessage)
 {
 	v8::HandleScope scope(v8::Isolate::GetCurrent());
@@ -118,14 +120,29 @@ void Window::ProcessNodeMessage(InterThreadMessage* pMessage)
 		Nan::New(pMessage->strData).ToLocalChecked(),
 	};
 	
-	if (HSERVICE_MGR == pMessage->hService) {
+	OutputDebugString("EE");
+	if (pMessage->strTitle.find("console.") != -1) {
+		OutputDebugString(pMessage->strTitle.c_str());
+		((Window*)pMessage->lpData)->SendNodeEvent(pMessage->strTitle, pMessage->strData);
+		return;
+	}
 
-		if (pMessage->strTitle.find("console.") != -1) {
-			OutputDebugString(pMessage->strTitle.c_str());
-			((Window*)pMessage->lpData)->SendNodeEvent(pMessage->strTitle, pMessage->strData);
-		}
-		else {
-			((Window*)pMessage->lpData)->PostNodeEvent(pMessage->strTitle, pMessage->strData);
+	OutputDebugString("FF"); 
+	if (HSERVICE_MGR == pMessage->hService) {
+		OutputDebugString("GG");
+		((Window*)pMessage->lpData)->PostNodeEvent(pMessage->strTitle, pMessage->strData);
+	}
+	else {
+		OutputDebugString("HH");
+		XfsDevice* pDevice = nullptr;
+		if (pMessage && Window::m_lpInstance) {
+			OutputDebugString("II");
+			auto it = Window::m_lpInstance->m_services.find(pMessage->hService);
+			if (it != Window::m_lpInstance->m_services.end()) {
+				OutputDebugString("JJ");
+				pDevice = it->second;
+				pDevice->PostNodeEvent(pMessage->strTitle, pMessage->strData);
+			}
 		}
 	}
 }
@@ -496,6 +513,12 @@ v8::Local<v8::Value> Window::SendNodeEvent(const std::string & title, const std:
 	OutputDebugString(data.c_str());
 
 	return Nan::MakeCallback(Nan::New(m_this), "_send", 2, argv);
+}
+
+//#############################################################################
+//#############################################################################
+void Window::AddDevice(HSERVICE hService, XfsDevice* pDevice) {
+	m_services[hService] = pDevice;
 }
 
 //#############################################################################
