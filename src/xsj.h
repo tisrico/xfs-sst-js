@@ -58,9 +58,8 @@ inline bool JS2XFS(const json& j, XSJCallData& cd) {
 	std::string strCommand = j["command"];
 	cd.hService = j["service"];
 	cd.dwTimeout = j["timeOut"];
-	OutputDebugString("xxxxxxxxxx");
-	OutputDebugString(strCommand.c_str());
-	cd.dwType = (strCommand.find("XFS_INF") == 0)?XPT_Query:XPT_Execute;
+	cd.dwType = (strCommand.find("WFS_INF_") == 0)?XPT_Query:XPT_Execute;
+
 	if(cd.dwType == XPT_Query) {
 		cd.dwCommand = GetXfsInfoCmdId(strCommand);
 	}

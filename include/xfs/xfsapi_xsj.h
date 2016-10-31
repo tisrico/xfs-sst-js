@@ -7,9 +7,8 @@ using json = nlohmann::json;
 //##############################################################################
 inline json XSJTranslate(const HAPP p) {
 	json j;
-	if(!p) return j;
 
-	j = (int)p;
+	j["handle"] = (int)p;
 
 	return j;
 }

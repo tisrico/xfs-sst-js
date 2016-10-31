@@ -10,6 +10,7 @@
 #include <queue>
 #include <uv.h>
 #include <map>
+#include "json.hpp"
 
 //#############################################################################
 //#############################################################################
@@ -88,7 +89,7 @@ private:
   static void Call(const Nan::FunctionCallbackInfo<v8::Value>& info);
   
   v8::Local<v8::Value> Command(const std::string& title, const std::string& data);
-  void ProcessV8Message(InterThreadMessage* pMessage, DWORD callID);
+  HRESULT ProcessV8Message(InterThreadMessage* pMessage, nlohmann::json& jr);
   static void ProcessNodeMessage(InterThreadMessage* pMessage);
 
   void SendToNode(HSERVICE hService, const std::string& title, const std::string& data, LPVOID lpData);
@@ -164,6 +165,7 @@ public:
 //#define CTRAC		(Log("trace")) // app
 #define CERR		(Log("error"))
 #define CASS(c)		(Log("assert", (c), (#c)))
+#define XCINF		((Log("info")) << "[" <<__FUNCTION__ << ", line:" << __LINE__ << "] " )
 
 //#############################################################################
 //#############################################################################

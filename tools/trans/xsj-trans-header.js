@@ -55,9 +55,9 @@ _XfsMgr.prototype = {
 	},
 	start: function(lowMajor, lowMinor, highMajor, highMinor) {
 		var version = (lowMinor<<24)+(lowMajor<<16)+(highMinor<<8)+highMajor;
-		return result = this.___call({title:"start", 
+		return JSON.parse(this.___call({title:"start", 
 			data: { versionRequired: version }
-		});
+		}));
 	},
 	cleanUp: function() {
 		return this.___call({title:"cleanUp",
@@ -96,7 +96,7 @@ _XfsMgr.prototype = {
 			traceLevel = "_no_used";
 		}
 
-		return this.___call({title:"open", data:{
+		var result = this.___call({title:"open", data:{
 			logicalName: logicalName,
 			versionsRequired: parseInt(version),
 			appHandle: parseInt(appHandle),
@@ -104,6 +104,11 @@ _XfsMgr.prototype = {
 			traceLevel: traceLevel,
 			timeOut: timeOut
 		}});
+
+		var msg = JSON.parse(result);
+		this.services[msg.service] = msg.class;
+
+		return msg;
 	},
 	getDevObject: function(service) {
 		if(!this.services.hasOwnProperty(service)) {
@@ -118,12 +123,6 @@ _XfsMgr.prototype = {
 		}
 	},
 	preProcessor: function(args) {
-		if(args[0]=="open") {
-			var msg = JSON.parse(args[1]);
-			this.services[msg.service] = msg.class;
-			return;
-		}
-
 		if(args[0]=="open.complete") {
 			var msg = JSON.parse(args[1]);
 			msg.class = this.services[msg.service];

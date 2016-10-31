@@ -120,26 +120,19 @@ void Window::ProcessNodeMessage(InterThreadMessage* pMessage)
 		Nan::New(pMessage->strData).ToLocalChecked(),
 	};
 	
-	OutputDebugString("EE");
 	if (pMessage->strTitle.find("console.") != -1) {
-		OutputDebugString(pMessage->strTitle.c_str());
 		((Window*)pMessage->lpData)->SendNodeEvent(pMessage->strTitle, pMessage->strData);
 		return;
 	}
 
-	OutputDebugString("FF"); 
 	if (HSERVICE_MGR == pMessage->hService) {
-		OutputDebugString("GG");
 		((Window*)pMessage->lpData)->PostNodeEvent(pMessage->strTitle, pMessage->strData);
 	}
 	else {
-		OutputDebugString("HH");
 		XfsDevice* pDevice = nullptr;
 		if (pMessage && Window::m_lpInstance) {
-			OutputDebugString("II");
 			auto it = Window::m_lpInstance->m_services.find(pMessage->hService);
 			if (it != Window::m_lpInstance->m_services.end()) {
-				OutputDebugString("JJ");
 				pDevice = it->second;
 				pDevice->PostNodeEvent(pMessage->strTitle, pMessage->strData);
 			}
@@ -205,9 +198,6 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 		}
 	}
 
-	OutputDebugString("Windows Message ....");
-	OutputDebugString(GetXfsMessageName(uMsg).c_str());
-
 	switch (uMsg) {
 	case WM_CREATE:
 		if (Window::m_lpInstance) {
@@ -231,29 +221,44 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 	case WM_NODE2WIN:	{
 		auto pmsg = (InterThreadMessage*)wParam;
 		if (pmsg) {
-			CINF << pmsg->strTitle << ":" << pmsg->strData;
-		}
-		if(pmsg && pmsg->hService == HSERVICE_MGR && 
-			pmsg->lpData == Window::m_lpInstance && Window::m_lpInstance != nullptr) {
-			Window::m_lpInstance->ProcessV8Message(pmsg, (DWORD)lParam);
+			XCINF << pmsg->strTitle << ":" << pmsg->strData;
 		}
 
-		delete pmsg;
+		if(pmsg && pmsg->hService == HSERVICE_MGR && 
+			pmsg->lpData == Window::m_lpInstance && Window::m_lpInstance != nullptr) {
+
+			json& j = *(json*)lParam;
+			auto result = Window::m_lpInstance->ProcessV8Message(pmsg, j);
+			j["title"] = pmsg->strTitle;
+			j["error"] = GetXfsErrorCodeName(result);
+			if (result != WFS_SUCCESS) {
+				j["title"] += ".error";
+			}
+			return result;
+		}
+
 		break;
 	}
 
 	case WM_NODE2WINDEV: {
 		auto pmsg = (InterThreadMessage*)wParam;
 		if (pmsg) {
-			CINF << pmsg->strTitle << ":" << pmsg->strData;
+			XCINF << pmsg->strTitle << ":" << pmsg->strData;
 		}
-		if (pmsg && pmsg->hService != HSERVICE_MGR &&
+		if (pmsg && pmsg->hService != HSERVICE_MGR && lParam &&
 			pmsg->lpData != nullptr) {
 			XfsDevice* pDevice = (XfsDevice*)pmsg->lpData;
-			pDevice->ProcessV8Message(pmsg->strTitle, pmsg->strData, (DWORD)lParam);
-		}
+			json& j = *(json*)lParam;
 
-		delete pmsg;
+			auto result = pDevice->ProcessV8Message(pmsg->strTitle, pmsg->strData, j);
+
+			j["title"] = pmsg->strTitle;
+			j["error"] = GetXfsErrorCodeName(result);
+			if (result != WFS_SUCCESS) {
+				j["title"] += ".error";
+			}
+			return result;
+		}
 		break;
 	}
 
@@ -346,29 +351,30 @@ v8::Local<v8::Value> Window::Command(const std::string & title, const std::strin
 	// uninitialize
 
 	int callID = m_callID++;
-	auto pmsg = new InterThreadMessage({ HSERVICE_MGR, title, data, this});
-	if (!PostMessage(m_hwnd, WM_NODE2WIN, (WPARAM)pmsg, callID)) {
-		delete pmsg;
-		return Nan::New(false);
-	}
-	
-	return Nan::New(callID);
+	auto msg = InterThreadMessage({ HSERVICE_MGR, title, data, this});
+	json jr;
+
+	SendMessage(m_hwnd, WM_NODE2WIN, (WPARAM)&msg, (LPARAM)&jr);
+	return Nan::New(jr.dump()).ToLocalChecked();
 }
 
 //#############################################################################
 //#############################################################################
-void Window::ProcessV8Message(InterThreadMessage* pmsg, DWORD callID) {
+HRESULT Window::ProcessV8Message(InterThreadMessage* pmsg, json& jr) {
 	if (!pmsg) {
-		return;
+		return XSJ_INVALID_DATA;
 	}
 
+	XCINF << "@Window " << pmsg->strTitle << " " << pmsg->strData;
 	json j = json::parse(pmsg->strData);
+	HRESULT hr;
 
 	// open
 	if (pmsg->strTitle == "open") {
 		if (!m_xfsStarted) {
-			SendToNode(HSERVICE_MGR, "open.error", "xfs not sarted", this);
-			return;
+			hr = XSJ_INVALID_STATE;
+			jr["errorMessage"] = "XFS not started";
+			return hr;
 		}
 
 		DWORD dwVersionsRequired = j["versionsRequired"];
@@ -383,104 +389,97 @@ void Window::ProcessV8Message(InterThreadMessage* pmsg, DWORD callID) {
 		HSERVICE   hService;
 		REQUESTID requestID;
 
-		HRESULT hr = WFSAsyncOpen(const_cast<char *>(logicalName.c_str()), appHandle,
+		hr = WFSAsyncOpen(const_cast<char *>(logicalName.c_str()), appHandle,
 			(appId=="_no_used")?NULL:const_cast<char *>(appId.c_str()), traceLevel, timeOut,
 			&hService, m_hwnd, dwVersionsRequired, &srvcVersion, &spiVersion, &requestID);
 
 		if (WFS_SUCCESS != hr) {
-			SendToNode(HSERVICE_MGR, "open.error", GetXfsErrorCodeName(hr), this);
-			return;
+			jr["errorMessage"] = "xfs not started";
+			return hr;
 		}
 
-		json jr;
-		j["service"] = (int)hService;
-		j["serviceVersion"] = XSJTranslate(&srvcVersion);
-		j["spiVersion"] = XSJTranslate(&spiVersion);
-		j["requestID"] = requestID;
-		j["class"] = XFSLSKey(logicalName, "class");
-		j["callID"] = callID;
+		jr["service"] = (int)hService;
+		jr["serviceVersion"] = XSJTranslate(&srvcVersion);
+		jr["spiVersion"] = XSJTranslate(&spiVersion);
+		jr["requestID"] = requestID;
+		jr["class"] = XFSLSKey(logicalName, "class");
 
-		SendToNode(HSERVICE_MGR, "open", j.dump(), this);
-		return;
+		return hr;
 	}
 
 	// start
 	if (pmsg->strTitle == "start") {
 		if (m_xfsStarted) {
-			SendToNode(HSERVICE_MGR, "start.error", "xfs sarted", this);
-			return;
+			hr = XSJ_INVALID_STATE;
+			jr["errorMessage"] = "XFS started";
+			return hr;
 		}
+
 		DWORD dwVersionsRequired = j["versionRequired"];
 		WFSVERSION version = { 0 };
-		HRESULT hr = WFSStartUp(dwVersionsRequired, &version);
+
+		hr = WFSStartUp(dwVersionsRequired, &version);
 		if (WFS_SUCCESS != hr) {
-			SendToNode(HSERVICE_MGR, "start.error", GetXfsErrorCodeName(hr), this);
-			return;
+			return hr;
 		}
 
 		m_xfsStarted = true;
-
-		auto j = XSJTranslate(&version);
-		SendToNode(HSERVICE_MGR, "start", j.dump(), this);
-		return;
+		jr = XSJTranslate(&version);
+		return hr;
 	}
 
 	// cleanUp
 	if (pmsg->strTitle == "cleanUp") {
 		if (!m_xfsStarted) {
-			SendToNode(HSERVICE_MGR, "cleanUp.error", "xfs not sarted", this);
-			return;
+			jr["errorMessage"] = "XFS not started";
+			return XSJ_INVALID_STATE;
 		}
 
 		HRESULT hr = WFSCleanUp();
 		if (WFS_SUCCESS != hr) {
-			SendToNode(HSERVICE_MGR, "cleanUp.error", GetXfsErrorCodeName(hr), this);
-			return;
+			return hr;
 		}
 
 		m_xfsStarted = false;
-		SendToNode(HSERVICE_MGR, "cleanUp", "", this);
+		return hr;
 	}
 
 	// uninitialize
 	if (pmsg->strTitle == "uninitialize") {
 		if (m_xfsStarted) {
-			SendToNode(HSERVICE_MGR, "uninitialize.error", "xfs is running.", this);
-			return;
+			jr["errorMessage"] = "XFS is running";
+			return XSJ_INVALID_STATE;
 		}
 
 		PostMessage(((Window*)pmsg->lpData)->m_hwnd, WM_CLOSE, NULL, NULL);
-		SendToNode(HSERVICE_MGR, "uninitialize", "", this);
+		return WFS_SUCCESS;
 	}
 
 	// createAppHandle
 	if ("createAppHandle" == pmsg->strTitle) {
 		HAPP handle;
-		HRESULT hr = WFSCreateAppHandle(&handle);
+		hr = WFSCreateAppHandle(&handle);
 
 		if (WFS_SUCCESS != hr) {
-			SendToNode(HSERVICE_MGR, "createAppHandle.error", GetXfsErrorCodeName(hr), this);
-			return;
+			return hr;
 		}
 
-		auto j = XSJTranslate(handle);
-		SendToNode(HSERVICE_MGR, "createAppHandle", j.dump(), this);
-		return;
+		jr = XSJTranslate(handle);
+		return hr;
 	}
 
 	// destroyAppHandle
 	if ("destroyAppHandle" == pmsg->strTitle) {
-		HAPP handle = (HAPP) atol(pmsg->strData.c_str());
-		HRESULT hr = WFSDestroyAppHandle(handle);
-
-		if (WFS_SUCCESS != hr) {
-			SendToNode(HSERVICE_MGR, "destroyAppHandle.error", GetXfsErrorCodeName(hr), this);
-			return;
-		}
-
-		SendToNode(HSERVICE_MGR, "destroyAppHandle", "", this);
-		return;
+		HAPP handle = (HAPP)atol(pmsg->strData.c_str());
+		return WFSDestroyAppHandle(&handle);
 	}
+
+	XCINF << "unsupported command:" << pmsg->strTitle << " " << pmsg->strData;
+
+	hr = XSJ_COMMAND_NOT_FOUND;
+	jr["error"] = GetXfsErrorCodeName(hr);
+	jr["title"] += ".error";
+	return hr;
 }
 
 //#############################################################################
@@ -498,8 +497,6 @@ v8::Local<v8::Value> Window::PostNodeEvent(const std::string & title, const std:
 		Nan::New(title).ToLocalChecked(),
 		Nan::New(data).ToLocalChecked(),
 	};
-	OutputDebugString(data.c_str());
-
 	return Nan::MakeCallback(Nan::New(m_this), "_post", 2, argv);
 }
 
@@ -510,8 +507,6 @@ v8::Local<v8::Value> Window::SendNodeEvent(const std::string & title, const std:
 		Nan::New(title).ToLocalChecked(),
 		Nan::New(data).ToLocalChecked(),
 	};
-	OutputDebugString(data.c_str());
-
 	return Nan::MakeCallback(Nan::New(m_this), "_send", 2, argv);
 }
 
@@ -524,7 +519,6 @@ void Window::AddDevice(HSERVICE hService, XfsDevice* pDevice) {
 //#############################################################################
 //#############################################################################
 DefineXFSProcessor(WFS_OPEN_COMPLETE, OpenComplete) {
-	OutputDebugString("open.complete");
 	//pData
 	json j = XSJTranslate(pData);
 	SendToNode(HSERVICE_MGR, "open.complete", j.dump(), this);

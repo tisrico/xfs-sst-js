@@ -154,6 +154,9 @@ typedef struct _wfs_vrsnerror
 
 /****** Error codes ******************************************************/
 // xfs-sst-js:{name:"nc", bitwise:false, applies:["WFSRESULT.hResult"], codeName:"XfsErrorCode"}
+#define XSJ_INVALID_STATE		                (3)
+#define XSJ_INVALID_DATA		                (2)
+#define XSJ_COMMAND_NOT_FOUND                   (1)
 #define WFS_SUCCESS                             (0)
 #define WFS_ERR_ALREADY_STARTED                 (-1)
 #define WFS_ERR_API_VER_TOO_HIGH                (-2)
