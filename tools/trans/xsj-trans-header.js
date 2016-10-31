@@ -36,12 +36,15 @@ function _XfsMgr() {
 
 _XfsMgr.prototype = {
 	___call: function (cd) {
+		var result;
 		if(typeof(cd.data) == "string") {
-			return this.__call(cd.title, cd.data);
+			result = this.__call(cd.title, cd.data);
 		}
 		else {
-			return this.__call(cd.title, JSON.stringify(cd.data));
+			result = this.__call(cd.title, JSON.stringify(cd.data));
 		}
+		console.log(result, "<-", cd);
+		return JSON.parse(result);
 	},
 	init: function() {
 		return this.___call({title:"initialize",
@@ -55,9 +58,9 @@ _XfsMgr.prototype = {
 	},
 	start: function(lowMajor, lowMinor, highMajor, highMinor) {
 		var version = (lowMinor<<24)+(lowMajor<<16)+(highMinor<<8)+highMajor;
-		return JSON.parse(this.___call({title:"start", 
+		return this.___call({title:"start", 
 			data: { versionRequired: version }
-		}));
+		});
 	},
 	cleanUp: function() {
 		return this.___call({title:"cleanUp",
@@ -105,10 +108,8 @@ _XfsMgr.prototype = {
 			timeOut: timeOut
 		}});
 
-		var msg = JSON.parse(result);
-		this.services[msg.service] = msg.class;
-
-		return msg;
+		this.services[result.service] = result.class;
+		return result;
 	},
 	getDevObject: function(service) {
 		if(!this.services.hasOwnProperty(service)) {
@@ -172,14 +173,16 @@ function _XfsDevice() {
 
 _XfsDevice.prototype = {
 	___call: function (cd) {
+		var result;
 		if(typeof(cd.data) == "string") {
-			return this.__call(cd.title, cd.data);
+			result = this.__call(cd.title, cd.data);
 		}
 		else {
-			return this.__call(cd.title, JSON.stringify(cd.data));
+			result = this.__call(cd.title, JSON.stringify(cd.data));
 		}
+		console.log(result, "<-", cd);
+		return JSON.parse(result);
 	},
-
 	_query: function(command, data) {
      	return this.___call({title:"query",
 			data: {command:command, data:data}

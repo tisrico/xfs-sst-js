@@ -309,40 +309,46 @@ void Window::Call(const Nan::FunctionCallbackInfo<v8::Value>& info) {
 //#############################################################################
 //#############################################################################
 v8::Local<v8::Value> Window::Command(const std::string & title, const std::string & data) {
+	json j;
 	if ("initialize" == title) {
-		return Nan::New(StartThread());
+		j = StartThread();
+		return Nan::New(j.dump()).ToLocalChecked();
 	}
 
 	if (!m_sarted) {
 		Nan::ThrowError("XFS Manager not started.");;
-		return Nan::Null();
+		return Nan::New(j.dump()).ToLocalChecked();
 	}
 
 	//getTraceLevel
 	if ("getTraceLevel" == title) {
-		return Nan::New(GetXfsTraceLevelName(m_traceLevel)).ToLocalChecked();
+		j = GetXfsTraceLevelName(m_traceLevel);
+		return Nan::New(j.dump()).ToLocalChecked();
 	}
 
 	//setTraceLevel
 	if ("setTraceLevel" == title) {
 		m_traceLevel = GetXfsTraceLevelId(data);
-		return Nan::New(GetXfsTraceLevelName(m_traceLevel)).ToLocalChecked();
+		j = GetXfsTraceLevelName(m_traceLevel);
+		return Nan::New(j.dump()).ToLocalChecked();
 	}
 
 	//getTimeOut
 	if ("getTimeOut" == title) {
-		return Nan::New((int)m_timeOut);
+		j = m_timeOut;
+		return Nan::New(j.dump()).ToLocalChecked();
 	}
 
 	//setTimeOut
 	if ("setTimeOut" == title) {
 		m_timeOut = atol(data.c_str());
-		return Nan::New((int)m_timeOut);
+		j = m_timeOut;
+		return Nan::New(j.dump()).ToLocalChecked();
 	}
 
 	if (!m_hwnd) {
 		Nan::ThrowError("XFS Manager is starting...");;
-		return Nan::Null();
+		return Nan::New(j.dump()).ToLocalChecked();
 	}
 
 	// start

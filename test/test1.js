@@ -11,8 +11,7 @@ xmgr.on('initialize', ()=>{
 	appHandle = xmgr.createAppHandle().handle;
 	console.log(xmgr.traceLevel);
 	console.log(xmgr.timeOut);
-
-	xmgr.open('PTR', 3, 0, 3, 0, appHandle);
+	var res = xmgr.open('PTR', 3, 0, 3, 0, appHandle);
 });
 
 xmgr.on('open.complete',  (data)=>{
