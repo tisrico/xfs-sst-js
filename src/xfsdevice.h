@@ -42,6 +42,7 @@ protected:
   HSERVICE						m_service;
   DWORD							m_traceLevel;
   DWORD							m_timeOut;
+  bool							m_syncCall;
 };
 
 #endif

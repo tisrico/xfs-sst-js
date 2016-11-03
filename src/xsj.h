@@ -104,7 +104,7 @@ inline std::string XFS2JS(XSJProcssType pt, const LPWFSRESULT result, json& j) {
 		j["result"] = pTranslator->fpToJS(result->lpBuffer);
 	}
 	else {
-		j["result"] = std::map<std::string, std::string>();
+		j["result"] = json::parse("{}");
 	}
 
 	return pTranslator->strCodeName;

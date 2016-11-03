@@ -1,3 +1,7 @@
+#pragma warning(disable:4996)
+#pragma warning(disable:4530)
+#pragma warning(disable:4577)
+
 #include "Window.h"
 #include <uv.h>
 #include "xsj-trans.h"
@@ -7,6 +11,7 @@
 #include "xfsdevice.h"
 
 using json = nlohmann::json;
+
 
 //#############################################################################
 //#############################################################################

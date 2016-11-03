@@ -11,24 +11,29 @@ xmgr.on('initialize', ()=>{
 	appHandle = xmgr.createAppHandle().handle;
 	console.log(xmgr.traceLevel);
 	console.log(xmgr.timeOut);
-	var res = xmgr.open('PTR', 3, 0, 3, 0, appHandle);
+	var res = xmgr.open('RPTR', 3, 0, 3, 0, appHandle);
 });
 
 xmgr.on('open.complete',  (data)=>{
 	printer = data.object;
-	printer.capabilities();
-	printer.status();
-});
+	
+	printer.async().mediaList().finish(function(forms) {
+		console.log("mmmm", forms);
+	});
 
-xmgr.on('start', (version)=>{
-});
+	printer.async().status().finish(function(status) {
+		console.log("nnnn", status);
+	});
 
-xmgr.on('cleanUp', ()=>{
-	xmgr.uninit();
-});
+	printer.on('PtrStatus', (status)=>{
+		//console.log("xxx", status);
+		printer.close();
+		printer.on('close.compelete', ()=> {
+			xmgr.cleanUp();
+			xmgr.uninit();
+		});
+	});
 
-xmgr.on('cleanUp.*', ()=>{
-	xmgr.uninit();
 });
 
 var run = 3;

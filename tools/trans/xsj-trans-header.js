@@ -43,7 +43,6 @@ _XfsMgr.prototype = {
 		else {
 			result = this.__call(cd.title, JSON.stringify(cd.data));
 		}
-		console.log(result, "<-", cd);
 		return JSON.parse(result);
 	},
 	init: function() {
@@ -132,7 +131,7 @@ _XfsMgr.prototype = {
 			return;
 		}
 	},
-	services: {}
+	services: {},
 }
 
 function makeDeviceObject(clss, id) {
@@ -167,7 +166,6 @@ Object.defineProperty(__XfsMgr.prototype, "timeOut", {
     }
 });
 
-
 function _XfsDevice() {
 }
 
@@ -180,8 +178,15 @@ _XfsDevice.prototype = {
 		else {
 			result = this.__call(cd.title, JSON.stringify(cd.data));
 		}
-		console.log(result, "<-", cd);
-		return JSON.parse(result);
+		result = JSON.parse(result);
+		this.lastRequest = null;
+		if(this.isAsync) {
+			if(result.hasOwnProperty('requestID')) {
+				this.lastRequestID = result.requestID;
+				return this;
+			}
+		}
+		return result;
 	},
 	_query: function(command, data) {
      	return this.___call({title:"query",
@@ -223,6 +228,47 @@ _XfsDevice.prototype = {
 			data: {eventClass:eventClass}
 		});		
 	},
+	sync: function() {
+		this.___call({title:"sync",
+			data: {}
+		});
+		return this;
+    },
+	async: function() {
+     	this.___call({title:"async",
+			data: {}
+		});
+		return this;
+    },
+    isSync: function() {
+     	return this.___call({title:"isSync",
+			data: {}
+		});
+    },
+    isAsync: function() {
+     	return this.___call({title:"isAsync",
+			data: {}
+		});
+    },
+    finish: function(func) {
+     	if(this.lastRequestID != null) {
+     		this.requests[this.lastRequestID] = func;
+     	}
+     	return this;
+     },
+	preProcessor: function(args) {
+		args[1] = JSON.parse(args[1]);
+
+		if(args.length >=2 && typeof(args[1]) == "object" && args[1].hasOwnProperty('requestID')) {
+			var requestID = args[1]["requestID"];
+			if(this.requests.hasOwnProperty(requestID)) {
+				var func = this.requests[requestID];
+				func(args[1]);
+				delete args[1]["requestID"];
+			}
+		}
+	},     
+	requests: {} 
 };
 
 Object.defineProperty(__XfsDevice.prototype, "service", {
