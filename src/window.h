@@ -112,7 +112,6 @@ protected:
   DWORD						  m_traceLevel;
   DWORD						  m_timeOut;
   HWND						  m_hwnd;
-  DWORD						  m_callID;
 
   static DWORD				  m_nodeThread;
   static Window*              m_lpInstance;

@@ -28,7 +28,7 @@ DWORD Window::m_nodeThread = GetCurrentThreadId();
 Window::Window(const Nan::FunctionCallbackInfo<v8::Value>& info):
 	m_this(v8::Isolate::GetCurrent(), info.Holder()), m_sarted(false), 
 	m_hwnd(nullptr), m_traceLevel(WFS_TRACE_API), m_timeOut(10000), m_loop(nullptr),
-	m_xfsStarted(false), m_callID(0) {
+	m_xfsStarted(false) {
 }
 
 //#############################################################################
@@ -236,9 +236,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 			auto result = Window::m_lpInstance->ProcessV8Message(pmsg, j);
 			j["title"] = pmsg->strTitle;
 			j["error"] = GetXfsErrorCodeName(result);
-			if (result != WFS_SUCCESS) {
-				j["title"] += ".error";
-			}
+			j["success"] = (result == WFS_SUCCESS);
 			return result;
 		}
 
@@ -259,9 +257,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 
 			j["title"] = pmsg->strTitle;
 			j["error"] = GetXfsErrorCodeName(result);
-			if (result != WFS_SUCCESS) {
-				j["title"] += ".error";
-			}
+			j["success"] = (result == WFS_SUCCESS);
 			return result;
 		}
 		break;
@@ -361,7 +357,6 @@ v8::Local<v8::Value> Window::Command(const std::string & title, const std::strin
 	// open, 
 	// uninitialize
 
-	int callID = m_callID++;
 	auto msg = InterThreadMessage({ HSERVICE_MGR, title, data, this});
 	json jr;
 

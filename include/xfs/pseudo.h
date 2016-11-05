@@ -7,6 +7,7 @@
 #include <iomanip>
 #include <vector>
 #include "xfsadmin.h"
+#include <string>
 
 #include "json.hpp"
 using json = nlohmann::json;
@@ -48,15 +49,11 @@ inline std::string XSJ_SystemTime2String(const SYSTEMTIME *st) {
 //##############################################################################
 inline std::vector<std::string> XSJ_List2Strings(LPCSTR pList) {
 	std::vector<std::string> list;
-	LPCSTR pp = pList;
-	while(pp && *pp) {
-		std::string name;
-		while(*pp) {
-			name += *pp;
-			pp++;
-		}
-		pp++;
+	LPCSTR pl = pList;
+	while(pl && *pl) {
+		std::string name(pl);
 		list.push_back(name);
+		pl += name.length() + 1;
 	}
 
 	return list;
@@ -64,20 +61,46 @@ inline std::vector<std::string> XSJ_List2Strings(LPCSTR pList) {
 
 //##############################################################################
 //##############################################################################
+template <typename T, typename R = json>
+json XSJ_ListNullTerminatedValues(const T* p, R(*converter)(const T&) = nullptr) {
+	std::vector<R> js;
+	if (!p) {
+		return js;
+	}
+
+	while (p && *p != NULL) {
+		T v = *p;
+		if (converter) {
+			js.push_back(converter(v));
+		}
+		else {
+			js.push_back(R(v));
+		}
+		p++;
+	}
+
+	return js;
+}
+
+//##############################################################################
+//##############################################################################
 template <typename T, typename R=json>
-json XSJ_ListNullTerminatedPointers(T* const * pp, R(*converter)(const T*)=nullptr) {
+json XSJ_ListNullTerminatedPointers(const T** pp, R(*converter)(const T*)=nullptr) {
 	std::vector<R> js;
 	if(!pp) {
 		return js;
 	}
 
 	while(*pp) {
-		T* p = *pp;
+		const T* p = *pp;
 		if(converter) {
-			js.push_back(converter(p));
+			OutputDebugString("5");
+			auto x = converter(p);
+			OutputDebugString("5.5");
+			js.push_back(x);
 		}
 		else {
-			js.push_back(json(p));	
+			js.push_back(R(p));	
 		}
 		pp++;
 	}
@@ -88,14 +111,14 @@ json XSJ_ListNullTerminatedPointers(T* const * pp, R(*converter)(const T*)=nullp
 //##############################################################################
 //##############################################################################
 template <typename T, typename R=json>
-json XSJ_ListNullTerminatedPointersValue(T* const * pp, R(*converter)(const T)) {
+json XSJ_ListNullTerminatedPointersValue(const T** pp, R(*converter)(const T)) {
 	std::vector<R> js;
 	if(!pp) {
 		return js;
 	}
 
 	while(*pp) {
-		T* p = *pp;
+		const T* p = *pp;
 		if(converter) {
 			js.push_back(converter(*p));
 		}
@@ -325,7 +348,6 @@ inline LPSTR XSJDecodePtrFields(const json &j, XSJAllocator* a) {
 				std::stringstream oss;
 				auto subvalue = *it;
 
-
 				oss << key << "[" << i << "]=" <<
 					subvalue.get<std::string>();
 				fields.push_back(oss.str());
@@ -345,6 +367,24 @@ inline LPSTR XSJDecodePtrFields(const json &j, XSJAllocator* a) {
 	}
 
 	return XSJStringArrayToNullTerminated(fields, a);
+}
+
+//#############################################################################
+//#############################################################################
+inline json XSJ_Stringify(LPCSTR string) {
+	if(!string) {
+		return json(nullptr);
+	}
+	return json(std::string(string));
+}
+
+//#############################################################################
+//#############################################################################
+inline json XSJ_Stringify(LPCWSTR string) {
+	if(!string) {
+		return json(nullptr);
+	}
+	return json(std::wstring(string));
 }
 
 #endif

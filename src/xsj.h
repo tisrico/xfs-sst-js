@@ -7,6 +7,7 @@
 enum XSJProcssType {
 	XPT_Query,
 	XPT_Execute,
+	XPT_Lock,
 	XPT_Unsolicited,
 };
 
@@ -81,31 +82,36 @@ inline bool JS2XFS(const json& j, XSJCallData& cd) {
 //##############################################################################
 //##############################################################################
 inline std::string XFS2JS(XSJProcssType pt, const LPWFSRESULT result, json& j) {
-	if(result == nullptr) {
-		return "";
-	}
-
 	std::string strCommand;
+
 	if(pt == XPT_Query) {
 		strCommand = GetXfsInfoCmdName(result->u.dwCommandCode);
 	}
 	else if(pt == XPT_Execute) {
 		strCommand = GetXfsExecuteCmdName(result->u.dwCommandCode);
 	}
+	else if (pt == XPT_Unsolicited) {
+		strCommand = GetXfsEventName(result->u.dwEventID);
+	}
 	else {
-		strCommand = GetXfsEventName(result->u.dwEventID);	
+		j["result"] = XSJ_ListNullTerminatedValues<HSERVICE, HSERVICE>((HSERVICE*)result->lpBuffer, nullptr);
+		strCommand = "ServiceClosed";
+		j["id"] = strCommand;
+		return strCommand;
 	}
 
 	j = XSJTranslate<WFSRESULT>(result);
-	j["type"] = strCommand;
+	j["id"] = strCommand;
 
 	auto pTranslator = findTranslator(strCommand, false);
 	if(pTranslator) {
-		j["result"] = pTranslator->fpToJS(result->lpBuffer);
+		j["data"] = pTranslator->fpToJS(result->lpBuffer);
+		j["name"] = pTranslator->strCodeName;
+		strCommand = pTranslator->strCodeName;
 	}
 	else {
-		j["result"] = json::parse("{}");
+		CWAR << "Translator not found for: " << strCommand;
 	}
 
-	return pTranslator->strCodeName;
+	return strCommand;
 }

@@ -360,6 +360,11 @@ exports.data_structure = class {
 			this.command = ts.markup.command;
 		}
 
+		this.ntArray = false;
+		if(ts.markup.hasOwnProperty('ntArray')) {
+			this.ntArray = ts.markup.ntArray;	
+		}
+
 		if(this.directCopy) {
 			this.fields = ts.lines;
 			return;
@@ -396,6 +401,7 @@ exports.data_structure = class {
 
 		var result = this.toJson(gs);
 		result += this.fromJson(gs);
+
 		//result += this.translators(gs);
 
 		return result;
@@ -453,7 +459,12 @@ exports.data_structure = class {
 			var fpToXFS = "nullptr";
 
 			if(item.output) {
-				fpToJS = util.format("([](const LPVOID p){ return XSJTranslate((LP%s)p); })", item.struct);
+				if(item.ntArray) {
+					fpToJS = util.format("([](const LPVOID p){ return XSJ_ListNullTerminatedPointers((const %s**)p, XSJTranslate<%s>); })", item.struct, item.struct);
+				}
+				else {
+					fpToJS = util.format("([](const LPVOID p){ return XSJTranslate((LP%s)p); })", item.struct);
+				}
 			}
 
 			if(item.input) {
@@ -554,6 +565,13 @@ exports.data_structure = class {
 						f.scope, f.csName);
 				}
 				else {
+					if(f.type == "LPSTR") {
+						prefix = "XSJ_Stringify";
+					}
+					else if(f.type == "LPWSTR") {
+						prefix = "XSJ_Stringify";
+					}
+
 					result += util.format('%s\tj[\"%s\"] = %s(p->%s%s);\n',
 						condition, f.jsName, prefix, f.scope, f.csName);
 				}
@@ -603,6 +621,7 @@ exports.data_structure = class {
 			if(f.ntArray) {
 				var prefix = "XSJ_ListNullTerminatedPointers";
 				var converter = "NULL";
+				var cast = util.format("(const %s **)", f.type.substring(2));
 
 				if(f.valueAtPointer) {
 					prefix += "Value";
@@ -613,8 +632,8 @@ exports.data_structure = class {
 					converter = util.format("XSJTranslate<%s>", pds.struct);
 				}
 
-				result += util.format('%s\tj[\"%s\"] = %s(p->%s%s, %s);\n',
-					condition, f.jsName, prefix, f.scope, f.csName, converter);
+				result += util.format('%s\tj[\"%s\"] = %s(%sp->%s%s, %s);\n',
+					condition, f.jsName, prefix, cast, f.scope, f.csName, converter);
 
 				return;
 			}
@@ -650,7 +669,7 @@ exports.data_structure = class {
 		result += util.format("inline %s* XSJTranslate(const json& j, XSJAllocator* a) {\n", this.struct);
 		result += "\tXSJAllocator allocator;\n";
 		result += "\tif(nullptr==a){\n\t\ta = &allocator;\n\t}\n";
-		result += util.format("\tauto p = (%s*)a->Get(sizeof(%s));\n\n", this.struct, this.struct);
+		result += util.format("\tauto p = a->Get<%s>();\n\n", this.struct);
 
 		//console.log(this);
 
@@ -711,7 +730,7 @@ exports.data_structure = class {
 			console.warn("field not supported", f);
 		});
 
-		result += util.format("\n\treturn a->Get<%s>();\n}\n", this.struct);
+		result += util.format("\n\treturn (%s*)a->Get();\n}\n", this.struct);
 		return result;
 	}
 };

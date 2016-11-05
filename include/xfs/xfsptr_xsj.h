@@ -7,7 +7,7 @@ typedef struct {
 } WFSPTRFORMLIST, *LPWFSPTRFORMLIST;
 /*
 // xfs-sst-js:{name:"data", type:"WFSPTRFORMLIST", codeName:"PtrFormlist", leading:1, output:true, input:false, command:"WFS_INF_PTR_FORM_LIST", directCopy:true}
-	return j = XSJ_List2Strings(p->lpszFormList);
+	return j = XSJ_List2Strings((LPSTR)p);
 // xfs-sst-js:{name:"end"}
 */
 
@@ -16,7 +16,7 @@ typedef struct {
 } WFSPTRMEDIALIST, *LPWFSPTRMEDIALIST;
 /*
 // xfs-sst-js:{name:"data", type:"WFSPTRMEDIALIST", codeName:"PtrMedialist", leading:1, output:true, input:false, command:"WFS_INF_PTR_MEDIA_LIST", directCopy:true}
-	return j = XSJ_List2Strings(p->lpszMediaList);
+	return j = XSJ_List2Strings((LPSTR)p);
 // xfs-sst-js:{name:"end"}
 */
 

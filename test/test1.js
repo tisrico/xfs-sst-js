@@ -14,26 +14,34 @@ xmgr.on('initialize', ()=>{
 	var res = xmgr.open('RPTR', 3, 0, 3, 0, appHandle);
 });
 
-xmgr.on('open.complete',  (data)=>{
-	printer = data.object;
-	
-	printer.async().mediaList().finish(function(forms) {
-		console.log("mmmm", forms);
-	});
+function dumpResult(result) {
+	//console.log(result);
+	console.log(require('util').inspect(result, {showHidden: false, depth: null}));
+}
 
-	printer.async().status().finish(function(status) {
-		console.log("nnnn", status);
-	});
+xmgr.on('open.complete',  (data)=>{
+	printer = data.object.async();
+	printer.queryField('RPTR_BMP', '').finish(dumpResult);
+/*
+	printer.status();
+	printer.capabilities();
+	printer.queryForm();
+	printer.queryMedia();
+
+	printer.async().formList().finish(dumpResult);
+	printer.async().mediaList().finish(dumpResult);
+	printer.controlMedia("WFS_PTR_CTRLEJECT").finish(dumpResult);
+	printer.capabilities().finish(dumpResult);
+	printer.async().status().finish(dumpResult);
 
 	printer.on('PtrStatus', (status)=>{
-		//console.log("xxx", status);
 		printer.close();
 		printer.on('close.compelete', ()=> {
 			xmgr.cleanUp();
 			xmgr.uninit();
 		});
 	});
-
+*/
 });
 
 var run = 3;

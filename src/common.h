@@ -6,19 +6,19 @@
 
 //#############################################################################
 //#############################################################################
-#define LPSTR(str) (const_cast<LPSTR>(std::string(str).c_str()))
+#define MKLPSTR(str) (const_cast<LPSTR>(std::string(str).c_str()))
 
 //#############################################################################
 //#############################################################################
 inline std::string XFSReadKey(HKEY _base, const std::string& _path, const std::string& _key) {
 	HKEY hKey;
-	if (WFMOpenKey(_base, LPSTR(_path), &hKey)) {
+	if (WFMOpenKey(_base, MKLPSTR(_path), &hKey)) {
 		return "";
 	}
 
 	DWORD l_dwSize = 1023;
 	char data[1024];
-	WFMQueryValue(hKey, LPSTR(_key), data, &l_dwSize);
+	WFMQueryValue(hKey, MKLPSTR(_key), data, &l_dwSize);
 
 	WFMCloseKey(hKey);
 	return std::string(data);
