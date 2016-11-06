@@ -72,7 +72,10 @@ inline bool JS2XFS(const json& j, XSJCallData& cd) {
 	if(pTranslator) {
 		cd.lpData = pTranslator->fpToXFS(j["data"]);
 	}
-	else {
+	else{
+		if(j.find("data") != j.end() && !j["data"].empty()) {
+			CWAR << "Translator to XFS not found for: " << strCommand << ": " << j.dump();
+		}
 		cd.lpData = nullptr;
 	}
 
@@ -109,8 +112,8 @@ inline std::string XFS2JS(XSJProcssType pt, const LPWFSRESULT result, json& j) {
 		j["name"] = pTranslator->strCodeName;
 		strCommand = pTranslator->strCodeName;
 	}
-	else {
-		CWAR << "Translator not found for: " << strCommand;
+	else if(result->lpBuffer){
+		CWAR << "Translator to JS not found for: " << strCommand;
 	}
 
 	return strCommand;

@@ -2,6 +2,19 @@
 #include "xfsapi.h"
 #include <windows.h>
 
+typedef CHAR __CHARRAY;
+// xfs-sst-js:{name:"data", type:"WFSPTRFORMNAME", codeName:"PtrQueryForm", leading:1, output:false, input:true, command:"WFS_INF_PTR_QUERY_FORM"}
+typedef struct {
+	__CHARRAY szFormName[1024];						// xfs-sst-js:{name:"data.field", defaultValue:null}
+} WFSPTRFORMNAME, *LPWFSPTRFORMNAME;
+// xfs-sst-js:{name:"end"}
+
+// xfs-sst-js:{name:"data", type:"WFSPTRMEDIANAME", codeName:"PtrQueryMedia", leading:1, output:false, input:true, command:"WFS_INF_PTR_QUERY_MEDIA"}
+typedef struct {
+	__CHARRAY szMediaName[1024];						// xfs-sst-js:{name:"data.field", defaultValue:null}
+} WFSPTRMEDIANAME, *LPWFSPTRMEDIANAME;
+// xfs-sst-js:{name:"end"}
+
 typedef struct {
 	LPSTR lpszFormList;
 } WFSPTRFORMLIST, *LPWFSPTRFORMLIST;
@@ -22,27 +35,27 @@ typedef struct {
 
 // xfs-sst-js:{name:"data", type:"WFSPTCONTROLMEDIA", codeName:"PtrControlMedia", leading:1, output:false, input:true, command:"WFS_CMD_PTR_CONTROL_MEDIA"}
 typedef struct {
-	DWORD dwMediaControl;							// xfs-sst-js:{name:"data.field"}
+	DWORD dwMediaControl;							// xfs-sst-js:{name:"data.field", defaultValue:"WFS_PTR_CTRLEJECT"}
 } WFSPTCONTROLMEDIA, *LPWFSPTCONTROLMEDIA;
 // xfs-sst-js:{name:"end"}
 
 
 // xfs-sst-js:{name:"data", type:"WFSPTRRESETCOUNT", codeName:"PtrResetCount", leading:1, output:false, input:true, command:"WFS_CMD_PTR_RESET_COUNT"}
 typedef struct {
-	USHORT usBinNumber;									// xfs-sst-js:{name:"data.field"}
+	USHORT usBinNumber;									// xfs-sst-js:{name:"data.field", defaultValue:0}
 } WFSPTRRESETCOUNT, *LPWFSPTRRESETCOUNT;
 // xfs-sst-js:{name:"end"}
 
 
 // xfs-sst-js:{name:"data", type:"WFSPTRRETRACTMEDIA", codeName:"PtrRetractMedia", leading:1, output:true, input:true, command:"WFS_CMD_PTR_RETRACT_MEDIA"}
 typedef struct {
-	USHORT usBinNumber;									// xfs-sst-js:{name:"data.field"}
+	USHORT usBinNumber;									// xfs-sst-js:{name:"data.field", defaultValue:1}
 } WFSPTRRETRACTMEDIA, *LPWFSPTRRETRACTMEDIA;
 // xfs-sst-js:{name:"end"}
 
 // xfs-sst-js:{name:"data", type:"WFSPTRDISPENSEPAPER", codeName:"PtrDispensePaper", leading:1, output:false, input:true, command:"WFS_CMD_PTR_DISPENSE_PAPER"}
 typedef struct {
-	WORD wPaperSource;									// xfs-sst-js:{name:"data.field"}
+	WORD wPaperSource;									// xfs-sst-js:{name:"data.field", defaultValue:"WFS_PTR_PAPERANY"}
 } WFSPTRDISPENSEPAPER, *LPWFSPTRDISPENSEPAPER;
 // xfs-sst-js:{name:"end"}
 

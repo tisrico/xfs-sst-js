@@ -154,9 +154,9 @@ function xfsSolicited(p) {
 
 		result = "{\n";
 		var pairs = [];
-		
 		this.ds_in.fields.map((f) =>{
-			pairs.push(util.format("\t\t\t%s: %s", f.jsName, f.jsName));
+			pairs.push(util.format("\t\t\t%s: %s||%s", f.jsName, f.jsName, 
+				JSON.stringify(f.defaultValue)));
 		});
 
 		result += pairs.join(",\n") + "\n\t\t}";
@@ -188,6 +188,7 @@ function data_field (f1, f2, f3) {
 	this.csName = f2;
 	this.fixedArray = false;
 	this.arrayLength = 0;
+
 
 	var reg = /(.*)(\[(.*)\])/;
 	if(reg.test(f2)) {
@@ -251,6 +252,16 @@ function data_field (f1, f2, f3) {
 	this.kvGroups = false;
 	if(this.extra.hasOwnProperty('kvGroups')) {
 		this.kvGroups = this.extra.kvGroups;
+	}
+
+	this.defaultValue="";
+	if(this.extra.hasOwnProperty('defaultValue')) {
+		this.defaultValue = this.extra.defaultValue;
+	}
+
+	this.seq = 0;
+	if(this.extra.hasOwnProperty('seq')) {
+		this.seq = this.extra.seq;
 	}
 
 }
@@ -365,6 +376,11 @@ exports.data_structure = class {
 			this.ntArray = ts.markup.ntArray;	
 		}
 
+		this.sortFields = false;
+		if(ts.markup.hasOwnProperty('sortFields')) {
+			this.sortFields = ts.markup.sortFields;	
+		}
+
 		if(this.directCopy) {
 			this.fields = ts.lines;
 			return;
@@ -383,6 +399,12 @@ exports.data_structure = class {
 			if(null != parts) {
 				this.fields.push(new data_field(parts[2], parts[4], parts[6]));
 			}
+		}
+
+		if(this.sortFields) {
+			this.fields.sort((a, b)=> {
+				return a.seq - b.seq;
+			});;
 		}
 	}
 
@@ -677,14 +699,22 @@ exports.data_structure = class {
 		this.fields.map((f)=>{
 			//console.log(f);
 
+			var condition = util.format('\tif (j.find("%s") != j.end() && !j["%s"].is_null())\n\t', f.jsName, f.jsName);
+
+			if(f.type == "__CHARRAY" && f.fixedArray && f.arrayLength) {
+				result += util.format("%s\tstd::strncpy(p->%s, j[\"%s\"].get<std::string>().c_str(), %s);\n\n", 
+					condition, f.csName, f.jsName, f.arrayLength);
+				return;
+			}
+
 			if(!f.fixedArray && !f.ntArray && !f.namedArray && !f.kvGroups) {
 
 				// search if it is a known data structure nested
 				var pds = find_ds(gs, f.type);
 				if(pds) {
 					// convert j[jsName] => f.Type instance
-					result += util.format("\tp->%s =  XSJTranslate(j[\"%s\"], nullptr);",
-						f.csName, f.jsName);
+					result += util.format("%s\tp->%s =  XSJTranslate(j[\"%s\"], nullptr);\n\n",
+						condition, f.csName, f.jsName);
 					return;
 				}
 
@@ -693,24 +723,23 @@ exports.data_structure = class {
 				if(pnc) {
 
 					// p->csName = GetXXXId(j[jsname]);
-					result += util.format("\tp->%s = (%s)Get%sId(j[\"%s\"]);\n", 
-						f.csName, f.type, pnc.codeName, f.jsName);			
+					result += util.format("%s\tp->%s = (%s)Get%sId(j[\"%s\"]);\n\n", 
+						condition, f.csName, f.type, pnc.codeName, f.jsName);			
 				}
 				else {
-
 					// p->csName = (TYPE)j[jsname];
 					var isPointer = (f.type.substring(0, 2) == "LP");
 					if(!isPointer) {
-						result += util.format("\tp->%s = (%s)j[\"%s\"];\n", 
-							f.csName, f.type, f.jsName);
+						result += util.format("%s\tp->%s = (%s)j[\"%s\"];\n\n", 
+							condition, f.csName, f.type, f.jsName);
 					}
 					else {
 						// LPSTR
 						if(f.type == "LPSTR") {
-							result += util.format("\tp->%s = a->Get(j[\"%s\"].get<std::string>());\n", 
-								f.csName, f.jsName);
+							result += util.format("%s\tp->%s = a->Get(j[\"%s\"].get<std::string>());\n\n", 
+								condition, f.csName, f.jsName);
 						}
-						else {
+					else {
 							console.warn("unknown pointer type", this);
 						}
 					}
@@ -721,8 +750,8 @@ exports.data_structure = class {
 
 			if(f.kvGroups) {
 				console.assert(this.struct == "WFSPTRPRINTFORM" && f.csName == "lpszFields", this);
-				result += util.format("\tp->%s = XSJDecodePtrFields(j[\"%s\"], a);\n", 
-					f.csName, f.jsName);
+				result += util.format("%s\tp->%s = XSJDecodePtrFields(j[\"%s\"], a);\n\n", 
+					condition, f.csName, f.jsName);
 				return;
 			}
 

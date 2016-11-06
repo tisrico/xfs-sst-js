@@ -426,7 +426,7 @@ extern "C" {
 /*=================================================================*/
 /* PTR Info Command Structures */
 /*=================================================================*/
-// xfs-sst-js:{name:"data", type:"WFSPTRRETRACTBINS", codeName:"PtrRetractBins", leading:3, output:true, input:true, command:""}
+// xfs-sst-js:{name:"data", type:"WFSPTRRETRACTBINS", codeName:"PtrRetractBins", leading:3, output:true, input:false, command:""}
 typedef struct _wfs_ptr_retract_bins
 {
    WORD      wRetractBin;                           // xfs-sst-js:{name:"data.field"}
@@ -528,7 +528,7 @@ typedef struct _wfs_frm_media
 typedef struct _wfs_ptr_query_field
 {
     LPSTR           lpszFormName;				  // xfs-sst-js:{name:"data.field"}
-    LPSTR           lpszFieldName;                      // xfs-sst-js:{name:"data.field"}
+    LPSTR           lpszFieldName;                      // xfs-sst-js:{name:"data.field", defaultValue:null}
 } WFSPTRQUERYFIELD, * LPWFSPTRQUERYFIELD;
 // xfs-sst-js:{name:"end"}
 
@@ -553,19 +553,19 @@ typedef struct _wfs_frm_field
 /* PTR Execute Command Structures */
 /*=================================================================*/
 
-// xfs-sst-js:{name:"data", type:"WFSPTRPRINTFORM", codeName:"PtrPrintForm", leading:3, output:false, input:true, command:"WFS_CMD_PTR_PRINT_FORM"}
+// xfs-sst-js:{name:"data", type:"WFSPTRPRINTFORM", codeName:"PtrPrintForm", leading:3, output:false, input:true, command:"WFS_CMD_PTR_PRINT_FORM", sortFields:true}
 typedef struct _wfs_ptr_print_form
 {
-    LPSTR           lpszFormName; 				  // xfs-sst-js:{name:"data.field"}
-    LPSTR           lpszMediaName;                      // xfs-sst-js:{name:"data.field"}
-    WORD            wAlignment;                         // xfs-sst-js:{name:"data.field"}
-    WORD            wOffsetX;                           // xfs-sst-js:{name:"data.field"}
-    WORD            wOffsetY;                           // xfs-sst-js:{name:"data.field"}
-    WORD            wResolution;                        // xfs-sst-js:{name:"data.field"}
-    DWORD           dwMediaControl;                     // xfs-sst-js:{name:"data.field"}
-    LPSTR           lpszFields;                         // xfs-sst-js:{name:"data.field", kvGroups:true}
-    LPWSTR          lpszUNICODEFields;                  // x!fs-sst-js:{name:"data.field"}
-    WORD            wPaperSource;                       // xfs-sst-js:{name:"data.field"}
+    LPSTR           lpszFormName; 				  // xfs-sst-js:{name:"data.field", seq:0}
+    LPSTR           lpszMediaName;                      // xfs-sst-js:{name:"data.field", seq:1}
+    WORD            wAlignment;                         // xfs-sst-js:{name:"data.field", defaultValue:"WFS_PTR_ALNUSEFORMDEFN", seq:7}
+    WORD            wOffsetX;                           // xfs-sst-js:{name:"data.field", defaultValue:0, seq:8}
+    WORD            wOffsetY;                           // xfs-sst-js:{name:"data.field", defaultValue:0, seq:9}
+    WORD            wResolution;                        // xfs-sst-js:{name:"data.field", defaultValue:"WFS_PTR_RESLOW", seq:10}
+    DWORD           dwMediaControl;                     // xfs-sst-js:{name:"data.field", seq:4}
+    LPSTR           lpszFields;                         // xfs-sst-js:{name:"data.field", kvGroups:true, seq:2}
+    LPWSTR          lpszUNICODEFields;                  // x!fs-sst-js:{name:"data.field", seq:3}
+    WORD            wPaperSource;                       // xfs-sst-js:{name:"data.field", defaultValue:"WFS_PTR_PAPERANY", seq:6}
 } WFSPTRPRINTFORM, * LPWFSPTRPRINTFORM;
 // xfs-sst-js:{name:"end"}
 
@@ -590,9 +590,9 @@ typedef struct _wfs_ptr_read_form_out
 // xfs-sst-js:{name:"data", type:"WFSPTRRAWDATA", codeName:"PtrRawData", leading:3, output:false, input:true, command:"WFS_CMD_PTR_RAW_DATA"}
 typedef struct _wfs_ptr_raw_data
 {
-    WORD            wInputData;				  // xfs-sst-js:{name:"data.field"}
-    ULONG           ulSize;                             // xfs-sst-js:{name:"data.field"}
-    LPBYTE          lpbData;							// xfs-sst-js:{name:"data.field"}	
+    WORD            wInputData;				  // xfs-sst-js:{name:"data.field", defaultValue:"WFS_PTR_NOINPUTDATA"}
+    ULONG           ulSize;                             // xfs-sst-js:{name:"data.field", defaultValue:0}
+    LPBYTE          lpbData;					  // xfs-sst-js:{name:"data.field", defaultValue:""}	
 } WFSPTRRAWDATA, * LPWFSPTRRAWDATA;
 // xfs-sst-js:{name:"end"}
 
@@ -607,9 +607,9 @@ typedef struct _wfs_ptr_raw_data_in
 // xfs-sst-js:{name:"data", type:"WFSPTRMEDIAUNIT", codeName:"PtrMediaUit", leading:3, output:false, input:true, command:"WFS_CMD_PTR_MEDIA_EXTENTS"}
 typedef struct _wfs_ptr_media_unit
 {
-    WORD            wBase;					  // xfs-sst-js:{name:"data.field"}
-    WORD            wUnitX;                             // xfs-sst-js:{name:"data.field"}
-    WORD            wUnitY;                             // xfs-sst-js:{name:"data.field"}
+    WORD            wBase;					  // xfs-sst-js:{name:"data.field", defaultValue:"WFS_FRM_INCH"}
+    WORD            wUnitX;                             // xfs-sst-js:{name:"data.field", defaultValue:96}
+    WORD            wUnitY;                             // xfs-sst-js:{name:"data.field", defaultValue:96}
 } WFSPTRMEDIAUNIT, * LPWFSPTRMEDIAUNIT;
 // xfs-sst-js:{name:"end"}
 
@@ -630,8 +630,8 @@ typedef struct _wfs_ptr_image_request
     WORD           wBackImageColorFormat;               // xfs-sst-js:{name:"data.field"}
     WORD           wCodelineFormat;                     // xfs-sst-js:{name:"data.field"}
     WORD           fwImageSource;                       // xfs-sst-js:{name:"data.field"}
-    LPSTR          lpszFrontImageFile;                  // xfs-sst-js:{name:"data.field"}
-    LPSTR          lpszBackImageFile;                   // xfs-sst-js:{name:"data.field"}
+    LPSTR          lpszFrontImageFile;                  // xfs-sst-js:{name:"data.field", defaultValue:null}
+    LPSTR          lpszBackImageFile;                   // xfs-sst-js:{name:"data.field", defaultValue:null}
 } WFSPTRIMAGEREQUEST, * LPWFSPTRIMAGEREQUEST;
 // xfs-sst-js:{name:"end"}
 
@@ -648,8 +648,8 @@ typedef struct _wfs_ptr_image
 // xfs-sst-js:{name:"data", type:"WFSPTRRESET", codeName:"PtrReset", leading:3, output:false, input:true, command:"WFS_CMD_PTR_RESET"}
 typedef struct _wfs_ptr_reset
 {
-    DWORD         dwMediaControl;				  // xfs-sst-js:{name:"data.field"}
-    USHORT        usRetractBinNumber;                   // xfs-sst-js:{name:"data.field"}
+    DWORD         dwMediaControl;				  // xfs-sst-js:{name:"data.field", defaultValue:"WFS_PTR_CTRLRETRACT"}
+    USHORT        usRetractBinNumber;                   // xfs-sst-js:{name:"data.field", defaultValue:0}
 } WFSPTRRESET, * LPWFSPTRRESET;
 // xfs-sst-js:{name:"end"}
 

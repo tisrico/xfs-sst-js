@@ -94,9 +94,7 @@ json XSJ_ListNullTerminatedPointers(const T** pp, R(*converter)(const T*)=nullpt
 	while(*pp) {
 		const T* p = *pp;
 		if(converter) {
-			OutputDebugString("5");
 			auto x = converter(p);
-			OutputDebugString("5.5");
 			js.push_back(x);
 		}
 		else {
@@ -227,14 +225,6 @@ json XSJ_ListArrayValue(const T* p, R(*mc)(const S), std::string(*ic)(const W), 
 
 //#############################################################################
 //#############################################################################
-/*
-// xfs-sst-js:{name:"data", type: "SYSTEMTIME", codeName: "SysteTime", leading:1, output:true, input:false, command:"", directCopy:true}
-	j = XSJ_SystemTime2String(p);
-// xfs-sst-js:{name:"end"}
-*/
-
-//#############################################################################
-//#############################################################################
 inline char* HexToBytes(const std::string& hex, char* pData) {
 	std::vector<char> bytes;
 
@@ -317,18 +307,16 @@ protected:
 inline LPSTR XSJStringArrayToNullTerminated(std::vector<std::string> fields, XSJAllocator* a) {
 	int totalSize = 0;
 	for(auto it=fields.begin(); it != fields.end(); it++) {
-		totalSize += (int)(*it).length() + 1;
+		totalSize += (int)it->length() + 1;
 	}
-
-	LPSTR ret = (LPSTR)a->Get(totalSize+1);
+	totalSize++;
+	LPSTR ret = (LPSTR)a->Get(totalSize);
 	LPSTR p = ret;
-
 	for(auto it=fields.begin(); it != fields.end(); it++) {
-		strcpy(p, (*it).c_str());
-		p+=(*it).length();
+		strncpy(p, it->c_str(), it->length());
+		p+=it->length();
 		p++;
 	}
-
 	return ret;
 }
 
@@ -340,32 +328,23 @@ inline LPSTR XSJDecodePtrFields(const json &j, XSJAllocator* a) {
 	for (auto it = j.begin(); it != j.end(); ++it) {
 		auto key = it.key();
 		auto value = it.value();
-
 		if(value.is_array()) {
 			int i = 0;
-			
-			for (auto ix = j.begin(); ix != j.end(); ++ix) {
+			for (auto ix = value.begin(); ix != value.end(); ++ix) {
 				std::stringstream oss;
-				auto subvalue = *it;
-
-				oss << key << "[" << i << "]=" <<
-					subvalue.get<std::string>();
+				auto subvalue = *ix;
+				oss << key << "[" << i << "]=" << subvalue;
 				fields.push_back(oss.str());
-
 				i++;
 			}
 		}
 		else {
-			std::string field;
-
-			field = key;
-			field += "=";
-			field += value.get<std::string>();
-
-			fields.push_back(field);
+			std::stringstream oss;
+			oss << key << "=";
+			oss << value;
+			fields.push_back(oss.str());
 		}
 	}
-
 	return XSJStringArrayToNullTerminated(fields, a);
 }
 
