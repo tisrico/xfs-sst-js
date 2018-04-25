@@ -42,8 +42,9 @@ messaging.prototype = {
     }
   },
 
-  _post: function(evt) {
+  _post: function() {
   var args = arguments;
+  args[0] = "xsj." + args[0];
   setImmediate(()=> {
     if(this.preProcessor) {
       this.preProcessor(args);
@@ -58,8 +59,9 @@ messaging.prototype = {
   });
 },
 
- _send:function(evt) {
+ _send:function() {
     var args = arguments;
+    args[0] = "xsj." + args[0];
     if(this.preProcessor) {
       this.preProcessor(args);
     }

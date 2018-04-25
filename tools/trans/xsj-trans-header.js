@@ -123,7 +123,7 @@ _XfsMgr.prototype = {
 		}
 	},
 	preProcessor: function(args) {
-		if(args[0]=="open.complete") {
+		if(args[0]=="xsj.open.complete") {
 			var msg = JSON.parse(args[1]);
 			msg.class = this.services[msg.service];
 			args[1] = {data:JSON.stringify(msg), 
@@ -251,7 +251,7 @@ _XfsDevice.prototype = {
 			data: {}
 		});
     },
-    finish: function(func) {
+    then: function(func) {
      	if(this.lastRequestID != null) {
      		this.requests[this.lastRequestID] = func;
      	}
