@@ -24,22 +24,29 @@ struct XSJCallData {
 //##############################################################################
 //##############################################################################
 inline Translator* findTranslator(const std::string cmd, bool toXfs) {
-	int size = 0;
-	Translator* pTranslator = GetTranslators(size);
+	static int size = 0;
+	static std::map<std::string, Translator*> translators;
 
-	for(int i=0; i<size; i++) {
-
-		if(pTranslator->strCommand == cmd) {
-			if(toXfs && pTranslator->fpToXFS) {
-				return pTranslator;
-			}
-
-			if(!toXfs && pTranslator->fpToJS) {
-				return pTranslator;
-			}
+	if(size == 0) {
+		Translator* pTranslator = GetTranslators(size);
+		for(int i=0; i<size; i++) {
+			translators[pTranslator->strCommand] = pTranslator++;
 		}
-		pTranslator++;
 	}
+
+	auto translator = translators.find(cmd);
+	if(translator == translators.end()) {
+		return nullptr;
+	}
+
+	if(toXfs && translator->second->fpToXFS) {
+		return translator->second;
+	}
+
+	if(!toXfs && translator->second->fpToJS) {
+		return translator->second;
+	}
+
 	return nullptr;
 }
 

@@ -144,6 +144,7 @@ v8::Local<v8::Value> XfsDevice::Command(const std::string& title, const std::str
 
 	SendMessage(Window::m_lpInstance->m_hwnd, WM_NODE2WINDEV, 
 		(WPARAM)&msg, (LPARAM)&jr);
+	jr["asyncCall"] = !m_syncCall;
 
 	return Nan::New(jr.dump()).ToLocalChecked();
 }

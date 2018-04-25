@@ -69,11 +69,12 @@ class XfsDevice;
 class Window: public Nan::ObjectWrap {
 public:
   static void Init(v8::Local<v8::Object> exports);
-  
   static bool IsNodeThread();
+
   v8::Local<v8::Value> PostNodeEvent(const std::string& title, const std::string& data);
   v8::Local<v8::Value> SendNodeEvent(const std::string& title, const std::string& data);
   void AddDevice(HSERVICE hService, XfsDevice* pDevice);
+
   DeclareXFSProcessor(WFS_OPEN_COMPLETE, OpenComplete);
   DeclareXFSProcessor(WFS_EXECUTE_EVENT, ExecuteEvent);
   DeclareXFSProcessor(WFS_SERVICE_EVENT, ServiceEvent);
@@ -100,8 +101,9 @@ private:
   static Nan::Persistent<v8::Function> constructor;
 
   friend LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
-  friend class Log;
+  friend class SimpleLog;
   friend class XfsDevice;
+
 protected:
   uv_loop_t                  *m_loop;
   uv_async_t                  m_async;
@@ -120,14 +122,14 @@ protected:
 
 //#############################################################################
 //#############################################################################
-class Log : public std::stringstream {
+class SimpleLog : public std::stringstream {
 public:
-	Log(const std::string& type_ = "log", bool cond_ = true, const std::string express_="") {
+	SimpleLog(const std::string& type_ = "log", bool cond_ = true, const std::string express_="") {
 		type = "console." + type_;
 		condition = cond_;
 		express = express_;
 	}
-	~Log() {
+	~SimpleLog() {
 		if (condition && type == "console.assert") {
 			return;
 		}
@@ -158,13 +160,13 @@ public:
 
 //#############################################################################
 //#############################################################################
-//#define CLOG		(Log("log"))   // app
-#define CWAR		(Log("warn"))
-#define CINF		(Log("info"))
-//#define CTRAC		(Log("trace")) // app
-#define CERR		(Log("error"))
-#define CASS(c)		(Log("assert", (c), (#c)))
-#define XCINF		((Log("info")) << "[" <<__FUNCTION__ << ", line:" << __LINE__ << "] " )
+//#define CLOG		(SimpleLog("log"))   // app
+#define CWAR		(SimpleLog("warn"))
+#define CINF		(SimpleLog("info"))
+//#define CTRAC		(SimpleLog("trace")) // app
+#define CERR		(SimpleLog("error"))
+#define CASS(c)		(SimpleLog("assert", (c), (#c)))
+#define XCINF		((SimpleLog("info")) << "[" <<__FUNCTION__ << ", line:" << __LINE__ << "] " )
 
 //#############################################################################
 //#############################################################################

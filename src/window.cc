@@ -83,9 +83,9 @@ bool Window::StartThread() {
 
 		m_loop = uv_default_loop();
 		uv_async_init(m_loop, &m_async, OnNodeMessage);
-		uv_thread_create(&m_thread_id, WinMessagePump, this);
 		m_async.data = new MessageQueue();
 
+		uv_thread_create(&m_thread_id, WinMessagePump, this);
 		return m_sarted;
 	}
 
@@ -94,10 +94,16 @@ bool Window::StartThread() {
 }
 
 //#############################################################################
+// processing messages from Window to Node
 //#############################################################################
 void Window::OnNodeMessage(uv_async_t *handle) {
+	if (!handle->data) {
+		return;
+	}
+
 	InterThreadMessage* pMessage = nullptr;
 	(*(MessageQueue*)handle->data) >> pMessage;
+
 	while(nullptr != pMessage) {
 		ProcessNodeMessage(pMessage);
 
@@ -116,6 +122,7 @@ void Window::OnNodeMessage(uv_async_t *handle) {
 }
 
 //#############################################################################
+// process messages from Window to Node
 //#############################################################################
 void Window::ProcessNodeMessage(InterThreadMessage* pMessage)
 {
@@ -160,7 +167,7 @@ void Window::WinMessagePump(LPVOID p) {
 	HWND hwnd = CreateWindowEx(
 		0,                              // Optional window styles.
 		CLASS_NAME,                     // Window class
-		"Sample Window",    			// Window text
+		"XSJ Window",    				// Window text
 		WS_OVERLAPPEDWINDOW,            // Window style
 										// Size and position
 		CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
@@ -196,7 +203,10 @@ void Window::WinMessagePump(LPVOID p) {
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 	LPWFSRESULT pData = (LPWFSRESULT)lParam;
 	XfsDevice* pDevice = nullptr;
-	if (pData && Window::m_lpInstance) {
+
+	if ((uMsg >= WFS_OPEN_COMPLETE && uMsg <= WFS_SYSTEM_EVENT) && 
+		pData && Window::m_lpInstance) {
+
 		auto it = Window::m_lpInstance->m_services.find(pData->hService);
 		if (it != Window::m_lpInstance->m_services.end()) {
 			pDevice = it->second;
@@ -223,10 +233,11 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 		EndPaint(hwnd, &ps);
 	}
 
+	// node to device manager
 	case WM_NODE2WIN:	{
 		auto pmsg = (InterThreadMessage*)wParam;
 		if (pmsg) {
-			XCINF << pmsg->strTitle << ":" << pmsg->strData;
+			XCINF <<  pmsg->strTitle << ":" << pmsg->strData;
 		}
 
 		if(pmsg && pmsg->hService == HSERVICE_MGR && 
@@ -243,6 +254,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 		break;
 	}
 
+	// node to a device
 	case WM_NODE2WINDEV: {
 		auto pmsg = (InterThreadMessage*)wParam;
 		if (pmsg) {
@@ -277,8 +289,6 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 	XFSProcessorEntry(WFS_USER_EVENT, UserEvent);
 	XFSProcessorEntry(WFS_SYSTEM_EVENT, SystemEvent);
 	XFSProcessorEntry(WFS_TIMER_EVENT, TimerEvent);
-	return 0;
-
 	}
 
 	return DefWindowProc(hwnd, uMsg, wParam, lParam);
@@ -375,7 +385,7 @@ HRESULT Window::ProcessV8Message(InterThreadMessage* pmsg, json& jr) {
 	json j = json::parse(pmsg->strData);
 	HRESULT hr;
 
-	// open
+	// open a logic device
 	if (pmsg->strTitle == "open") {
 		if (!m_xfsStarted) {
 			hr = XSJ_INVALID_STATE;
@@ -413,7 +423,7 @@ HRESULT Window::ProcessV8Message(InterThreadMessage* pmsg, json& jr) {
 		return hr;
 	}
 
-	// start
+	// start xfs manager
 	if (pmsg->strTitle == "start") {
 		if (m_xfsStarted) {
 			hr = XSJ_INVALID_STATE;
@@ -434,7 +444,7 @@ HRESULT Window::ProcessV8Message(InterThreadMessage* pmsg, json& jr) {
 		return hr;
 	}
 
-	// cleanUp
+	// cleanUp xfs manager
 	if (pmsg->strTitle == "cleanUp") {
 		if (!m_xfsStarted) {
 			jr["errorMessage"] = "XFS not started";
@@ -450,7 +460,7 @@ HRESULT Window::ProcessV8Message(InterThreadMessage* pmsg, json& jr) {
 		return hr;
 	}
 
-	// uninitialize
+	// uninitialize, shutdown window thread
 	if (pmsg->strTitle == "uninitialize") {
 		if (m_xfsStarted) {
 			jr["errorMessage"] = "XFS is running";
@@ -480,7 +490,7 @@ HRESULT Window::ProcessV8Message(InterThreadMessage* pmsg, json& jr) {
 		return WFSDestroyAppHandle(&handle);
 	}
 
-	XCINF << "unsupported command:" << pmsg->strTitle << " " << pmsg->strData;
+	CERR << "unsupported command:" << pmsg->strTitle << " " << pmsg->strData;
 
 	hr = XSJ_COMMAND_NOT_FOUND;
 	jr["error"] = GetXfsErrorCodeName(hr);
@@ -489,6 +499,7 @@ HRESULT Window::ProcessV8Message(InterThreadMessage* pmsg, json& jr) {
 }
 
 //#############################################################################
+// send message from Window thread to Node thread
 //#############################################################################
 void Window::SendToNode(HSERVICE hService, const std::string& title, const std::string& data, LPVOID lpData) {
 	auto pReturn = new InterThreadMessage({ hService,title, data, lpData });
@@ -497,6 +508,8 @@ void Window::SendToNode(HSERVICE hService, const std::string& title, const std::
 }
 
 //#############################################################################
+// post message to Node event mechanism, the event is actually emitted with a
+// dealy of setImmediate
 //#############################################################################
 v8::Local<v8::Value> Window::PostNodeEvent(const std::string & title, const std::string & data) {
 	v8::Local<v8::Value> argv[2] = {
@@ -507,6 +520,7 @@ v8::Local<v8::Value> Window::PostNodeEvent(const std::string & title, const std:
 }
 
 //#############################################################################
+// send message to Node event mechanism
 //#############################################################################
 v8::Local<v8::Value> Window::SendNodeEvent(const std::string & title, const std::string & data) {
 	v8::Local<v8::Value> argv[2] = {
@@ -523,6 +537,8 @@ void Window::AddDevice(HSERVICE hService, XfsDevice* pDevice) {
 }
 
 //#############################################################################
+// at the moment of open call, node side doesn't know the service id
+// so when completed, it has to be sent to the manager
 //#############################################################################
 DefineXFSProcessor(WFS_OPEN_COMPLETE, OpenComplete) {
 	//pData

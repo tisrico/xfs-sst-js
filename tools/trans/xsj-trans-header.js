@@ -180,7 +180,8 @@ _XfsDevice.prototype = {
 		}
 		result = JSON.parse(result);
 		this.lastRequest = null;
-		if(this.isAsync) {
+
+		if(result.hasOwnProperty('asyncCall') && result.asyncCall) {
 			if(result.hasOwnProperty('requestID')) {
 				this.lastRequestID = result.requestID;
 				return this;
