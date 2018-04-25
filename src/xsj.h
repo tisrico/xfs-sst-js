@@ -30,24 +30,26 @@ inline Translator* findTranslator(const std::string cmd, bool toXfs) {
 	if(size == 0) {
 		Translator* pTranslator = GetTranslators(size);
 		for(int i=0; i<size; i++) {
-			translators[pTranslator->strCommand] = pTranslator++;
+			if(pTranslator->fpToXFS) {
+				translators[std::string("2XFS") + pTranslator->strCommand] = pTranslator;
+			}
+
+			if(pTranslator->fpToJS) {
+				translators[std::string("2JS") + pTranslator->strCommand] = pTranslator;
+			}
+			pTranslator++;
 		}
 	}
 
-	auto translator = translators.find(cmd);
+	std::string id = toXfs?"2XFS":"2JS";
+	id += cmd;
+
+	auto translator = translators.find(id);
 	if(translator == translators.end()) {
 		return nullptr;
 	}
 
-	if(toXfs && translator->second->fpToXFS) {
-		return translator->second;
-	}
-
-	if(!toXfs && translator->second->fpToJS) {
-		return translator->second;
-	}
-
-	return nullptr;
+	return translator->second;
 }
 
 //##############################################################################
