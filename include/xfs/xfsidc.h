@@ -89,7 +89,7 @@ extern "C" {
 // xfs-sst-js:{name:"end"}
 
 /* values of WFSIDCSTATUS.fwRetainBin */
-// xfs-sst-js:{name:"nc", bitwise:false, applies:["WFSIDCSTATUS.fwRetainBin"], codeName:"XfsIdcRetainBin"}
+// xfs-sst-js:{name:"nc", bitwise:false, applies:["WFSIDCSTATUS.fwRetainBin", "WFSIDCRETAINBIN.wRetainBin"], codeName:"XfsIdcRetainBin"}
 #define     WFS_IDC_RETAINBINOK                 (1)
 #define     WFS_IDC_RETAINNOTSUPP               (2)
 #define     WFS_IDC_RETAINBINFULL               (3)
@@ -127,7 +127,7 @@ extern "C" {
 
 /* values of WFSIDCCAPS.fwReadTracks, WFSIDCCAPS.fwWriteTracks,
              WFSIDCCARDDATA.wDataSource */
-// xfs-sst-js:{name:"nc", bitwise:true, applies:["WFSIDCCAPS.fwReadTracks", "WFSIDCCAPS.fwWriteTracks", "WFSIDCCARDDATA.wDataSource"], codeName:"XfsIdcTrack"}
+// xfs-sst-js:{name:"nc", bitwise:true, applies:["WFSIDCCAPS.fwReadTracks", "WFSIDCCAPS.fwWriteTracks", "WFSIDCCARDDATA.wDataSource", "WFSREADRAWDATA.wReadData", "WFSIDCCARDDATARAWINPUT.wDataSource"], codeName:"XfsIdcTrack"}
 #define     WFS_IDC_NOTSUPP                     0x0000
 #define     WFS_IDC_TRACK1                      0x0001
 #define     WFS_IDC_TRACK2                      0x0002
@@ -143,7 +143,7 @@ extern "C" {
 // xfs-sst-js:{name:"end"}
 
 /* values of WFSIDCCAPS.fwChipProtocols */
-// xfs-sst-js:{name:"nc", bitwise:true, applies:["WFSIDCCAPS.fwChipProtocols"], codeName:"XfsIdcChipProtocol"}
+// xfs-sst-js:{name:"nc", bitwise:true, applies:["WFSIDCCAPS.fwChipProtocols", "WFSIDCCHIPIO.wChipProtocol", "WFSIDCCHIPIOOUT.wChipProtocol"], codeName:"XfsIdcChipProtocol"}
 #define     WFS_IDC_CHIPT0                      0x0001
 #define     WFS_IDC_CHIPT1                      0x0002
 #define     WFS_IDC_CHIPT2                      0x0004
@@ -170,7 +170,7 @@ extern "C" {
 // xfs-sst-js:{name:"end"}
 
 /* values of WFSIDCCAPS.fwPowerOnOption, WFSIDCCAPS.fwPowerOffOption,  */
-// xfs-sst-js:{name:"nc", bitwise:false, applies:["WFSIDCCAPS.fwPowerOnOption", "WFSIDCCAPS.fwPowerOffOption"], codeName:"XfsIdcPowerOption"}
+// xfs-sst-js:{name:"nc", bitwise:false, applies:["WFSIDCCAPS.fwPowerOnOption", "WFSIDCCAPS.fwPowerOffOption", "WFSIDCREST.wResetIn"], codeName:"XfsIdcPowerOption"}
 #define     WFS_IDC_NOACTION                    (1)
 #define     WFS_IDC_EJECT                       (2)
 #define     WFS_IDC_RETAIN                      (3)
@@ -179,7 +179,7 @@ extern "C" {
 // xfs-sst-js:{name:"end"}
 
 /* values of WFSIDCCAPS.fwWriteMode; WFSIDCWRITETRACK.fwWriteMethod, WFSIDCCARDDATA.fwWriteMethod */
-// xfs-sst-js:{name:"nc", bitwise:true, applies:["WFSIDCCAPS.fwWriteMode", "WFSIDCWRITETRACK.fwWriteMethod", "WFSIDCCARDDATA.fwWriteMethod"], codeName:"XfsIdcWriteMethod"}
+// xfs-sst-js:{name:"nc", bitwise:true, applies:["WFSIDCCAPS.fwWriteMode", "WFSIDCWRITETRACK.fwWriteMethod", "WFSIDCCARDDATA.fwWriteMethod", "WFSIDCCARDDATARAWINPUT.fwWriteMethod"], codeName:"XfsIdcWriteMethod"}
 #define     WFS_IDC_UNKNOWN                     0x0001
 #define     WFS_IDC_LOCO                        0x0002
 #define     WFS_IDC_HICO                        0x0004
@@ -187,7 +187,7 @@ extern "C" {
 // xfs-sst-js:{name:"end"}
 
 /* values of WFSIDCCAPS.fwChipPower */
-// xfs-sst-js:{name:"nc", bitwise:true, applies:["WFSIDCCAPS.fwChipPower"], codeName:"XfsIdcChipPower"}
+// xfs-sst-js:{name:"nc", bitwise:true, applies:["WFSIDCCAPS.fwChipPower", "WFSCHIPPOWER.wChipPower", "WFSIDCCHIPPOWER.wChipPower"], codeName:"XfsIdcChipPower"}
 #define     WFS_IDC_CHIPPOWERCOLD               0x0002
 #define     WFS_IDC_CHIPPOWERWARM               0x0004
 #define     WFS_IDC_CHIPPOWEROFF                0x0008
@@ -211,7 +211,7 @@ extern "C" {
 // xfs-sst-js:{name:"end"}
 
 /* values WFSIDCCARDACT.wAction */
-// xfs-sst-js:{name:"nc", bitwise:false, applies:["WFSIDCCARDACT.wAction"], codeName:"XfsIdcCardAction"}
+// xfs-sst-js:{name:"nc", bitwise:false, applies:["WFSIDCCARDACT.wAction", "WFSIDCRESETOUT.wResetOut"], codeName:"XfsIdcCardAction"}
 #define     WFS_IDC_CARDRETAINED                (1)
 #define     WFS_IDC_CARDEJECTED                 (2)
 #define     WFS_IDC_CARDREADPOSITION            (3)
@@ -219,7 +219,7 @@ extern "C" {
 // xfs-sst-js:{name:"end"}
 
 /* values of WFSIDCCARDDATA.lpbData if security is read */
-// xfs-sst-js:{name:"nc", bitwise:false, applies:["WFSIDCCARDDATA.lpbData"], codeName:"XfsIdcSecLevel"}
+// xfs-sst-js:{name:"nc", bitwise:false, applies:["WFSIDCCARDDATA.lpbData____"], codeName:"XfsIdcSecLevel"}
 #define     WFS_IDC_SEC_READLEVEL1              '1'
 #define     WFS_IDC_SEC_READLEVEL2              '2'
 #define     WFS_IDC_SEC_READLEVEL3              '3'
@@ -302,9 +302,9 @@ typedef struct _wfs_idc_form
     WORD            fwAction;                                    // xfs-sst-js:{name:"data.field"}
     LPSTR           lpszTracks;                                  // xfs-sst-js:{name:"data.field"}
     BOOL            bSecure;                                     // xfs-sst-js:{name:"data.field"}
-    LPSTR           lpszTrack1Fields;                            // xfs-sst-js:{name:"data.field", ntArray:true}
-    LPSTR           lpszTrack2Fields;                            // xfs-sst-js:{name:"data.field", ntArray:true}
-    LPSTR           lpszTrack3Fields;                            // xfs-sst-js:{name:"data.field", ntArray:true}
+    LPSTR           lpszTrack1Fields;                            // xfs-sst-js:{name:"data.field", ntStringList:true}
+    LPSTR           lpszTrack2Fields;                            // xfs-sst-js:{name:"data.field", ntStringList:true}
+    LPSTR           lpszTrack3Fields;                            // xfs-sst-js:{name:"data.field", ntStringList:true}
 } WFSIDCFORM, * LPWFSIDCFORM;
 // xfs-sst-js:{name:"end"}
 
@@ -333,42 +333,44 @@ typedef struct _wfs_idc_retain_card
 // xfs-sst-js:{name:"data", type:"WFSIDCSETKEY", codeName:"IdcSetKey", leading:3, output:false, input:true, command:"WFS_CMD_IDC_SETKEY"}
 typedef struct _wfs_idc_setkey
 {
-    USHORT          usKeyLen;                                // xfs-sst-js:{name:"data.field"}
-    LPBYTE          lpbKeyValue;                             // xfs-sst-js:{name:"data.field"}
+    USHORT          usKeyLen;                                // xfs-sst-js:{name:"data.field", defaultValue:0}
+    LPBYTE          lpbKeyValue;                             // xfs-sst-js:{name:"data.field", defaultValue:null}
 } WFSIDCSETKEY, * LPWFSIDCSETKEY;
 // xfs-sst-js:{name:"end"}
 
-
+// xfs-sst-js:{name:"data", type:"WFSIDCCARDDATA", codeName:"IdcCardData", leading:3, output:true, input:false, command:"WFS_CMD_IDC_READ_RAW_DATA"}
 typedef struct _wfs_idc_card_data
 {
-    WORD            wDataSource;
-    WORD            wStatus;
-    ULONG           ulDataLength;
-    LPBYTE          lpbData;
-    WORD            fwWriteMethod;
+    WORD            wDataSource;                                  // xfs-sst-js:{name:"data.field"}
+    WORD            wStatus;                                      // xfs-sst-js:{name:"data.field"}
+    ULONG           ulDataLength;                                 // xfs-sst-js:{name:"data.field"}
+    LPBYTE          lpbData;                                      // xfs-sst-js:{name:"data.field"}
+    WORD            fwWriteMethod;                                // xfs-sst-js:{name:"data.field"}
 } WFSIDCCARDDATA, * LPWFSIDCCARDDATA;
 // xfs-sst-js:{name:"end"}
 
+// xfs-sst-js:{name:"data", type:"WFSIDCCHIPIO", codeName:"IdcChipIo", leading:3, output:true, input:true, command:"WFS_CMD_IDC_CHIP_IO"}
 typedef struct _wfs_idc_chip_io
 {
-    WORD           wChipProtocol;
-    ULONG          ulChipDataLength;
-    LPBYTE         lpbChipData;
+    WORD           wChipProtocol;                                // xfs-sst-js:{name:"data.field", defaultValue:"WFS_IDC_NOTSUPP"}
+    ULONG          ulChipDataLength;                             // xfs-sst-js:{name:"data.field", defaultValue:0}
+    LPBYTE         lpbChipData;                                  // xfs-sst-js:{name:"data.field", defaultValue:null}
 } WFSIDCCHIPIO, * LPWFSIDCCHIPIO;
 // xfs-sst-js:{name:"end"}
 
+// xfs-sst-js:{name:"data", type:"WFSIDCCHIPPOWEROUT", codeName:"IdcChipPowerOut", leading:3, output:true, input:false, command:"WFS_CMD_IDC_CHIP_POWER"}
 typedef struct _wfs_idc_chip_power_out
 {
-    ULONG          ulChipDataLength;
-    LPBYTE         lpbChipData;
+    ULONG          ulChipDataLength;                            // xfs-sst-js:{name:"data.field"}
+    LPBYTE         lpbChipData;                                 // xfs-sst-js:{name:"data.field"}
 } WFSIDCCHIPPOWEROUT, * LPWFSIDCCHIPPOWEROUT;
 // xfs-sst-js:{name:"end"}
 
-
+// xfs-sst-js:{name:"data", type:"WFSIDCPARSEDATA", codeName:"IdcParseData", leading:3, output:false, input:true, command:"WFS_CMD_IDC_PARSE_DATA"}
 typedef struct _wfs_idc_parse_data
 {
-    LPSTR             lpstrFormName;
-    LPWFSIDCCARDDATA  *lppCardData;
+    LPSTR             lpstrFormName;                            // xfs-sst-js:{name:"data.field", defaultValue:null }
+    LPWFSIDCCARDDATA  *lppCardData;                             // xfs-sst-js:{name:"data.field", ntArray:true, defaultValue:{}} // tbd
 } WFSIDCPARSEDATA, * LPWFSIDCPARSEDATA;
 // xfs-sst-js:{name:"end"}
 
@@ -377,14 +379,16 @@ typedef struct _wfs_idc_parse_data
 /* IDC Message Structures */
 /*=================================================================*/
 
+// xfs-sst-js:{name:"data", type:"WFSIDCTRACKEVENT", codeName:"IdcTrackEvent", leading:3, output:true, input:false, command:"WFS_EXEE_IDC_INVALIDTRACKDATA"}
 typedef struct _wfs_idc_track_event
 {
-    WORD            fwStatus;
-    LPSTR           lpstrTrack;
-    LPSTR           lpstrData;
+    WORD            fwStatus;                               // xfs-sst-js:{name:"data.field"}
+    LPSTR           lpstrTrack;                             // xfs-sst-js:{name:"data.field"}
+    LPSTR           lpstrData;                              // xfs-sst-js:{name:"data.field"}
 } WFSIDCTRACKEVENT, * LPWFSIDCTRACKEVENT;
 // xfs-sst-js:{name:"end"}
 
+// xfs-sst-js:{name:"data", type:"WFSIDCCARDACT", codeName:"IdcCardAct", leading:3, output:true, input:false, command:"WFS_SRVE_IDC_CARDACTION"}
 typedef struct _wfs_idc_card_act
 {
     WORD            wAction;

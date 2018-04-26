@@ -2,7 +2,6 @@
 #include "xfsapi.h"
 #include <windows.h>
 
-typedef CHAR __CHARRAY;
 // xfs-sst-js:{name:"data", type:"WFSPTRFORMNAME", codeName:"PtrQueryForm", leading:1, output:false, input:true, command:"WFS_INF_PTR_QUERY_FORM"}
 typedef struct {
 	__CHARRAY szFormName[1024];						// xfs-sst-js:{name:"data.field", defaultValue:null}

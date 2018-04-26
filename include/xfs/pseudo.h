@@ -14,6 +14,10 @@ using json = nlohmann::json;
 
 //##############################################################################
 //##############################################################################
+typedef CHAR __CHARRAY;
+
+//##############################################################################
+//##############################################################################
 typedef json (*Translate2JS)(const LPVOID);
 
 //##############################################################################
@@ -270,12 +274,17 @@ public:
 	}
 
 	LPVOID Get(int size) {
+		if (size == 0) {
+			return m_pHead;
+		}
+
 		if (nullptr == m_pHead) {
 			if (WFS_SUCCESS != WFMAllocateBuffer(size, WFS_MEM_ZEROINIT, &m_pHead)) {
 				throw "XFS allocator failed";
 			}
 			return m_pHead;
 		}
+
 		LPVOID result;
 		if (WFS_SUCCESS != WFMAllocateMore(size, m_pHead, &result)) {
 			throw "XFS allocator failed";
