@@ -31,6 +31,13 @@ function inhertits(target, source) {
   return target;
 }
 
+function object_extend(target, source) {
+  for (var k in source.prototype) {
+    target[k] = source.prototype[k];
+  }
+  return target;
+}
+
 function _XfsMgr() {
 }
 
@@ -136,7 +143,7 @@ _XfsMgr.prototype = {
 
 function makeDeviceObject(clss, id) {
 	clss = clss.toLowerCase().capitalize();
-	var code = util.format('new Xfs%s(%s)', clss, id);
+	var code = util.format('object_extend(new XfsDevice(%d), Xfs%s)', id, clss);
 	return eval(code);
 }
 
@@ -283,3 +290,4 @@ Object.defineProperty(__XfsDevice.prototype, "service", {
 
 exports.XfsMgr = inhertits(__XfsMgr, _XfsMgr);
 var XfsDevice = inhertits(__XfsDevice, _XfsDevice);
+

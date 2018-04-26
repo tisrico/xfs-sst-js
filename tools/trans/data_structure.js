@@ -75,7 +75,7 @@ function xfsDevice(c) {
 	this.build = function() {
 		var processed = [];
 		var result = "";
-		result += util.format("function _Xfs%s() {\n}\n_Xfs%s.prototype = {\n", 
+		result += util.format("function Xfs%s() {\n}\nXfs%s.prototype = {\n", 
 			this.deviceClass.capitalize(), this.deviceClass.capitalize());
 
 		for(var x in this.solicited) {
@@ -88,8 +88,6 @@ function xfsDevice(c) {
 		});
 
 		result += "};\n\n"
-		result += util.format("var Xfs%s = inhertits(XfsDevice, _Xfs%s);\n", 
-			this.deviceClass.capitalize(), this.deviceClass.capitalize());
 		result += util.format("exports.Xfs%s = Xfs%s;\n", 
 			this.deviceClass.capitalize(), this.deviceClass.capitalize());
 		result += "\n\n";

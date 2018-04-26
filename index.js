@@ -15,8 +15,8 @@ function messaging() {
 messaging.prototype = {
   _logger: function(title, message) {
     if(!title.match(/console\..*/g)) {
-      if(message.length) {
-        console.log(util.format('event:%s, data:%s', title, message));
+      if(message) {
+        console.log(util.format('event:%s, data:%s', title, util.inspect(message, {showHidden: false, depth: null})));
       }
       else {
        console.log(util.format('event:%s', title));

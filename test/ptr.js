@@ -15,7 +15,7 @@ xmgr.on('xsj.initialize', ()=>{
 });
 
 function dumpResult(result) {
-	console.log(result);
+	//console.log(result);
 	//console.log(require('util').inspect(result, {showHidden: false, depth: null}));
 }
 
