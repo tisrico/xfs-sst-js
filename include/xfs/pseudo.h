@@ -32,6 +32,21 @@ struct Translator {
 
 //##############################################################################
 //##############################################################################
+inline std::string XSJ_SystemTime2String(const SYSTEMTIME& st) {
+	std::stringstream oss;
+	oss << st.wYear << "-" 
+	<< std::setw(2) << std::setfill('0') << st.wMonth << "-" 
+	<< std::setw(2) << std::setfill('0') << st.wDay << " "
+	<< std::setw(2) << std::setfill('0') << st.wHour << ":"
+	<< std::setw(2) << std::setfill('0') << st.wMinute << ":"
+	<< std::setw(2) << std::setfill('0') << st.wSecond << "."
+	<< std::setw(3) << std::setfill('0') << st.wMilliseconds;
+
+	return oss.str();
+}
+
+//##############################################################################
+//##############################################################################
 inline std::string XSJ_SystemTime2String(const SYSTEMTIME *st) {
 	std::stringstream oss;
 	oss << st->wYear << "-" 
@@ -39,7 +54,7 @@ inline std::string XSJ_SystemTime2String(const SYSTEMTIME *st) {
 	<< std::setw(2) << std::setfill('0') << st->wDay << " "
 	<< std::setw(2) << std::setfill('0') << st->wHour << ":"
 	<< std::setw(2) << std::setfill('0') << st->wMinute << ":"
-	<< std::setw(2) << std::setfill('0') << st->wSecond << ":"
+	<< std::setw(2) << std::setfill('0') << st->wSecond << "."
 	<< std::setw(3) << std::setfill('0') << st->wMilliseconds;
 
 	return oss.str();
@@ -130,6 +145,7 @@ json XSJ_ListNullTerminatedPointersValue(const T** pp, R(*converter)(const T)) {
 }
 
 //##############################################################################
+// tranlsate p[idx] of len length, idx is coded in ic, the value is coded in mc
 //##############################################################################
 template <typename T, typename S, typename W, typename R=json>
 json XSJ_ListArray(const T* p, R(*mc)(const S), std::string(*ic)(const W), int len) {
@@ -364,6 +380,15 @@ inline json XSJ_Stringify(LPCWSTR string) {
 		return json(nullptr);
 	}
 	return json(std::wstring(string));
+}
+
+//#############################################################################
+//#############################################################################
+inline json XSJ_Stringify(LPBYTE string) {
+	if(!string) {
+		return json(nullptr);
+	}
+	return json(std::wstring((LPCWSTR)string));
 }
 
 #endif

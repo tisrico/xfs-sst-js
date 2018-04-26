@@ -51,7 +51,7 @@ typedef XFSBLOCKINGHOOK * LPXFSBLOCKINGHOOK;
 
 #define WFSDDESCRIPTION_LEN                     256
 #define WFSDSYSSTATUS_LEN                       256
-// xfs-sst-js:{name:"nc", bitwise:false, applies:["WFSDEVSTATUS.fwState"], codeName:"XfsDevStatus"}
+// xfs-sst-js:{name:"nc", bitwise:false, applies:["WFSDEVSTATUS.dwState"], codeName:"XfsDevStatus"}
 /****** Values of WFSDEVSTATUS.fwState **********************************/
 
 #define WFS_STAT_DEVONLINE                      (0)
@@ -73,7 +73,7 @@ typedef struct _wfs_result
 {
     REQUESTID       RequestID;								// xfs-sst-js:{name:"data.field"}
     HSERVICE        hService;                               // xfs-sst-js:{name:"data.field"}
-    SYSTEMTIME      tsTimestamp;                            // xfs-sst-js:{name:"data.field", take_addr:true}
+    SYSTEMTIME      tsTimestamp;                            // xfs-sst-js:{name:"data.field"}
     HRESULT         hResult;                                // xfs-sst-js:{name:"data.field"}
     union {
         DWORD       dwCommandCode;                          // x|fs-sst-js:{name:"data.field", scope:"u."}

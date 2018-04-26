@@ -124,7 +124,7 @@ extern "C" {
 // xfs-sst-js:{name:"end"}
 
 /* values of WFSPTRSTATUS.fwToner */
-// xfs-sst-js:{name:"nc", bitwise:false, applies:["WFSPTRSTATUS.fwToner", "WFSPTRTONERTHRESHOLD.wTonerThreshold"], codeName:"XfsPtrTonerSatus"}
+// xfs-sst-js:{name:"nc", bitwise:false, applies:["WFSPTRSTATUS.fwToner", "WFSPTRTONERTHRESHOLD.lpwTonerThreshold"], codeName:"XfsPtrTonerSatus"}
 #define    WFS_PTR_TONERFULL                (0)
 #define    WFS_PTR_TONERLOW                 (1)
 #define    WFS_PTR_TONEROUT                 (2)
@@ -563,7 +563,7 @@ typedef struct _wfs_ptr_print_form
     WORD            wOffsetY;                           // xfs-sst-js:{name:"data.field", defaultValue:0, seq:9}
     WORD            wResolution;                        // xfs-sst-js:{name:"data.field", defaultValue:"WFS_PTR_RESLOW", seq:10}
     DWORD           dwMediaControl;                     // xfs-sst-js:{name:"data.field", seq:4}
-    LPSTR           lpszFields;                         // xfs-sst-js:{name:"data.field", kvGroups:true, seq:2}
+    LPSTR           lpszFields;                         // xfs-sst-js:{name:"data.field", kvGroups:true, seq:2, defaultValue:{}}
     LPWSTR          lpszUNICODEFields;                  // x!fs-sst-js:{name:"data.field", seq:3}
     WORD            wPaperSource;                       // xfs-sst-js:{name:"data.field", defaultValue:"WFS_PTR_PAPERANY", seq:6}
 } WFSPTRPRINTFORM, * LPWFSPTRPRINTFORM;

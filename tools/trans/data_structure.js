@@ -376,6 +376,21 @@ exports.data_structure = class {
 			this.ntArray = ts.markup.ntArray;	
 		}
 
+		this.nestedStruct = false;
+		if(ts.markup.hasOwnProperty('nestedStruct')) {
+			this.nestedStruct = ts.markup.nestedStruct;	
+		}
+
+		this.nestedType = "";
+		if(ts.markup.hasOwnProperty('nestedType')) {
+			this.nestedType = ts.markup.nestedType;	
+		}
+
+		this.nestedCast = "";
+		if(ts.markup.hasOwnProperty('nestedCast')) {
+			this.nestedCast = ts.markup.nestedCast;	
+		}
+
 		this.sortFields = false;
 		if(ts.markup.hasOwnProperty('sortFields')) {
 			this.sortFields = ts.markup.sortFields;	
@@ -485,7 +500,17 @@ exports.data_structure = class {
 					fpToJS = util.format("([](const LPVOID p){ return XSJ_ListNullTerminatedPointers((const %s**)p, XSJTranslate<%s>); })", item.struct, item.struct);
 				}
 				else {
-					fpToJS = util.format("([](const LPVOID p){ return XSJTranslate((LP%s)p); })", item.struct);
+					if(item.nestedStruct) {
+						if(item.nestedCast) {
+							fpToJS = util.format("([](const LPVOID p){ %s ns = {(%s)*(%s)p}; return XSJTranslate(&ns); })", item.struct, item.nestedType, item.nestedCast);
+						}
+						else {
+							fpToJS = util.format("([](const LPVOID p){ %s ns = {(%s)p}; return XSJTranslate(&ns); })", item.struct, item.nestedType);
+						}
+					}
+					else {
+						fpToJS = util.format("([](const LPVOID p){ return XSJTranslate((LP%s)p); })", item.struct);
+					}
 				}
 			}
 
@@ -510,6 +535,7 @@ exports.data_structure = class {
 		result += "using json = nlohmann::json;\n\n";
 		result += ("//##############################################################################\n");
 		result += ("//##############################################################################\n");
+
 		result += ("template <typename T>\n");
 		result += ("T* XSJTranslate(const json& j, XSJAllocator* a);\n\n");
 
@@ -587,11 +613,13 @@ exports.data_structure = class {
 						f.scope, f.csName);
 				}
 				else {
-					if(f.type == "LPSTR") {
+
+					// special types that json can't directly accept
+					if(f.type == "LPSTR" || f.type == "LPWSTR" || f.type == "LPBYTE") {
 						prefix = "XSJ_Stringify";
 					}
-					else if(f.type == "LPWSTR") {
-						prefix = "XSJ_Stringify";
+					else if(f.type == "SYSTEMTIME") {
+						prefix = "XSJ_SystemTime2String";
 					}
 
 					result += util.format('%s\tj[\"%s\"] = %s(p->%s%s);\n',

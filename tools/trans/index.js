@@ -23,6 +23,7 @@ files.map((item)=> {
 		console.log(new named_code().header());
 		console.log(new data_structure().header());
 
+		// named codes
 		gTranslators.map((item)=>{
 			var out = item.generate(gTranslators, "nc");
 			if(out) {
@@ -30,6 +31,7 @@ files.map((item)=> {
 			}
 		});
 
+		// data structure translators
 		gTranslators.map((item)=>{
 			var out = item.generate(gTranslators, "data");
 			if(out) {
@@ -52,6 +54,7 @@ files.map((item)=> {
 function beginCSpace() {
 	return "#ifndef __xsj_translate__h\n#define __xsj_translate__h\n";
 }
+
 function endCSpace() {
 	return "#endif";
 }
@@ -92,6 +95,7 @@ function addTranslator(trans) {
 		return;
 	}
 
+	// merge with existing nc with same codeName
 	var added = false;
 	gTranslators.map((item)=> {
 		if(item.type != "nc") {
