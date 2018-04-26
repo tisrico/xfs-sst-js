@@ -28,8 +28,8 @@ xmgr.on('xsj.open.complete',  (data)=>{
 
 	printer.async().mediaList().then((data)=>{
 		dumpResult(data);
-		medias = data.data;
-		data.data.map((item)=>{
+		medias = data.data.mediaList;
+		medias.map((item)=>{
 			printer.queryMedia(item).then(dumpResult);
 		});
 	});
@@ -37,7 +37,7 @@ xmgr.on('xsj.open.complete',  (data)=>{
 	printer.async().formList().then((data)=>{
 		dumpResult(data);
 
-		data.data.map((item)=>{
+		data.data.formList.map((item)=>{
 			dumpResult(item);
 			printer.queryForm(item).then(dumpResult);
 			printer.queryField(item).then(dumpResult);
