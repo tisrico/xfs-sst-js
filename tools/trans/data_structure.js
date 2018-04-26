@@ -75,7 +75,7 @@ function xfsDevice(c) {
 	this.build = function() {
 		var processed = [];
 		var result = "";
-		result += util.format("function _Xfs%s() {\n}\n_Xfs%s.prototype={\n", 
+		result += util.format("function _Xfs%s() {\n}\n_Xfs%s.prototype = {\n", 
 			this.deviceClass.capitalize(), this.deviceClass.capitalize());
 
 		for(var x in this.solicited) {
@@ -87,11 +87,12 @@ function xfsDevice(c) {
 			result += item.build(processed);
 		});
 
-		result += "};\n"
-		result += util.format("var Xfs%s=inhertits(XfsDevice, _Xfs%s);\n", 
+		result += "};\n\n"
+		result += util.format("var Xfs%s = inhertits(XfsDevice, _Xfs%s);\n", 
 			this.deviceClass.capitalize(), this.deviceClass.capitalize());
 		result += util.format("exports.Xfs%s = Xfs%s;\n", 
 			this.deviceClass.capitalize(), this.deviceClass.capitalize());
+		result += "\n\n";
 		return result;
 	}
 }
@@ -767,7 +768,11 @@ exports.data_structure = class {
 							result += util.format("%s\tp->%s = a->Get(j[\"%s\"].get<std::string>());\n\n", 
 								condition, f.csName, f.jsName);
 						}
-					else {
+						else if(f.type == "LPBYTE") {
+							result += util.format("%s\tp->%s = (%s)a->Get(j[\"%s\"].get<std::string>());\n\n", 
+								condition, f.csName, f.type, f.jsName);
+						}
+						else {
 							console.warn("unknown pointer type", this);
 						}
 					}
