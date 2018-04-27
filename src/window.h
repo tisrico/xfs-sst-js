@@ -28,6 +28,13 @@ public:
 
 //#############################################################################
 //#############################################################################
+struct DeviceInformation {
+	std::string m_class;
+	std::string m_logicalName;
+};
+
+//#############################################################################
+//#############################################################################
 #define HSERVICE_MGR	HSERVICE(-1)
 #define WM_NODE2WIN		(WM_USER + 30)
 #define WM_NODE2WINDEV	(WM_USER + 31)
@@ -118,6 +125,7 @@ protected:
   static DWORD				  m_nodeThread;
   static Window*              m_lpInstance;
   std::map<HSERVICE, XfsDevice*> m_services;
+  std::map<HSERVICE, DeviceInformation> m_serviceInformation;
 };
 
 //#############################################################################
