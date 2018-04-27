@@ -211,8 +211,8 @@ _XfsDevice.prototype = {
 			data:{}
 		});
 	},
-	ulock: function() {
-     	return this.___call({title:"ulock",
+	unlock: function() {
+     	return this.___call({title:"unlock",
 			data:{}
 		});
 	},

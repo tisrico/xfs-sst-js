@@ -293,7 +293,7 @@ HRESULT XfsDevice::ProcessV8Message(const std::string& title, const std::string&
 	}
 
 	if ("register" == title) {
-		DWORD cls = GetXfsEventClassId(j["eventClass"]);
+		DWORD cls = GetXfsEventId(j["eventClass"]);
 		if (m_syncCall) {
 			hr = WFSRegister(m_service, cls, Window::m_lpInstance->m_hwnd);
 		}
@@ -308,7 +308,7 @@ HRESULT XfsDevice::ProcessV8Message(const std::string& title, const std::string&
 	}
 
 	if ("deregister" == title) {
-		DWORD cls = GetXfsEventClassId(j["eventClass"]);
+		DWORD cls = GetXfsEventId(j["eventClass"]);
 		if (m_syncCall) {
 			hr = WFSDeregister(m_service, cls, Window::m_lpInstance->m_hwnd);
 		}
