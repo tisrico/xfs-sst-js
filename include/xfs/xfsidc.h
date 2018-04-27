@@ -25,7 +25,11 @@ extern "C" {
 // xfs-sst-js:{name:"end"}
 
 #define     WFS_SERVICE_CLASS_NAME_IDC          "IDC"
+
+// xfs-sst-js:{name:"nc", bitwise:false, applies:[], codeName:"XfsClassVersion"}    
 #define     WFS_SERVICE_CLASS_VERSION_IDC       0x0203
+// xfs-sst-js:{name:"end"}
+
 
 #define     IDC_SERVICE_OFFSET                  (WFS_SERVICE_CLASS_IDC * 100)
 

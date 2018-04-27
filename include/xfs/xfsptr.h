@@ -26,7 +26,10 @@ extern "C" {
 #define    WFS_SERVICE_CLASS_PTR            (1)
 // xfs-sst-js:{name:"end"}
 
+// xfs-sst-js:{name:"nc", bitwise:false, applies:[], codeName:"XfsClassVersion"}    
 #define    WFS_SERVICE_CLASS_VERSION_PTR    (0x0003) /* Version 3.00 */
+// xfs-sst-js:{name:"end"}
+
 #define    WFS_SERVICE_CLASS_NAME_PTR       "PTR"
 
 #define    PTR_SERVICE_OFFSET               (WFS_SERVICE_CLASS_PTR * 100)

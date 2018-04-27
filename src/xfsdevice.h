@@ -43,6 +43,10 @@ protected:
   DWORD							m_traceLevel;
   DWORD							m_timeOut;
   bool							m_syncCall;
+  std::string					m_class;
+  std::string					m_logicalName;
+
+  friend class Window;
 };
 
 #endif

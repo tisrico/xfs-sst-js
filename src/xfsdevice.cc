@@ -139,6 +139,18 @@ v8::Local<v8::Value> XfsDevice::Command(const std::string& title, const std::str
 		return Nan::New(!m_syncCall);
 	}
 
+	if ("getVersion" == title) {
+		auto vtag = "WFS_SERVICE_CLASS_VERSION_" + m_class;
+		auto version = GetXfsClassVersionId(vtag);
+		
+		json jr;
+		jr["major"] = version % 256;
+		jr["minor"] = version / 256;
+		jr["version"] = version;
+
+		return Nan::New(jr.dump()).ToLocalChecked();
+	}
+
 	InterThreadMessage msg({ m_service, title, data, this });
 	json jr;
 

@@ -12,6 +12,14 @@
 
 using json = nlohmann::json;
 
+//#############################################################################
+//#############################################################################
+std::string str_toupper(std::string s) {
+	std::transform(s.begin(), s.end(), s.begin(),
+		[](unsigned char c) { return std::toupper(c); }
+	);
+	return s;
+}
 
 //#############################################################################
 //#############################################################################
@@ -371,6 +379,14 @@ v8::Local<v8::Value> Window::Command(const std::string & title, const std::strin
 	json jr;
 
 	SendMessage(m_hwnd, WM_NODE2WIN, (WPARAM)&msg, (LPARAM)&jr);
+
+	if (title == "open") {
+		auto clss = jr["class"].get<std::string>();
+		auto logicalName = jr["logicalName"].get<std::string>();
+		auto hService = jr["service"];
+		m_serviceInformation[hService] = DeviceInformation({ clss , logicalName });
+	}
+
 	return Nan::New(jr.dump()).ToLocalChecked();
 }
 
@@ -418,7 +434,8 @@ HRESULT Window::ProcessV8Message(InterThreadMessage* pmsg, json& jr) {
 		jr["serviceVersion"] = XSJTranslate(&srvcVersion);
 		jr["spiVersion"] = XSJTranslate(&spiVersion);
 		jr["requestID"] = requestID;
-		jr["class"] = XFSLSKey(logicalName, "class");
+		jr["class"] = str_toupper(XFSLSKey(logicalName, "class"));
+		jr["logicalName"] = logicalName;
 
 		return hr;
 	}
@@ -534,6 +551,9 @@ v8::Local<v8::Value> Window::SendNodeEvent(const std::string & title, const std:
 //#############################################################################
 void Window::AddDevice(HSERVICE hService, XfsDevice* pDevice) {
 	m_services[hService] = pDevice;
+	auto info = m_serviceInformation[hService];
+	pDevice->m_class = info.m_class;
+	pDevice->m_logicalName = info.m_logicalName;
 }
 
 //#############################################################################

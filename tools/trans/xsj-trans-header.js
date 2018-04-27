@@ -258,6 +258,11 @@ _XfsDevice.prototype = {
 			data: {}
 		});
     },
+    getVersion: function() {
+     	return this.___call({title:"getVersion",
+			data: {}
+		});
+    },
     then: function(func) {
      	if(this.lastRequestID != null) {
      		this.requests[this.lastRequestID] = func;
