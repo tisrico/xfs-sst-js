@@ -8,6 +8,7 @@
 #include <vector>
 #include "xfsadmin.h"
 #include <string>
+#include <algorithm>
 
 #include "json.hpp"
 using json = nlohmann::json;
@@ -311,6 +312,22 @@ public:
 		}
 
 		return nullptr;		
+	}
+
+	template<typename T>
+	T* AllocateArray(const json& j, size_t size) {
+		size = min(size, j.size());
+		if(size == 0) {
+			return nullptr;
+		}
+
+		T* pt = (T*)Get(sizeof(T)* size);
+
+		for(size_t i=0; i<size; i++) {
+			pt[i] =  j[i].get<T>();
+		}
+
+		return pt;
 	}
 
 	template<typename T>
