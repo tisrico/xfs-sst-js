@@ -304,7 +304,7 @@ extern "C" {
 
 
 /* values of lpusReason in WFS_EXEE_CDM_NOTESERROR */
-// xfs-sst-js:{name:"nc", bitwise:true, applies:["WFS_EXEE_CDM_NOTESERROR.WFS_EXEE_CDM_NOTESERROR"], codeName:"XfsCdmNotesError"}
+// xfs-sst-js:{name:"nc", bitwise:true, applies:["WFSCDMNOTEERROR.fuReason"], codeName:"XfsCdmNotesError"}
 #define     WFS_CDM_DOUBLENOTEDETECTED          (1)
 #define     WFS_CDM_LONGNOTEDETECTED            (2)
 #define     WFS_CDM_SKEWEDNOTE                  (3)
@@ -437,7 +437,7 @@ typedef struct _wfs_cdm_cu_info
 {
     USHORT          usTellerID;             // xfs-sst-js:{name:"data.field"}
     USHORT          usCount;                // xfs-sst-js:{name:"data.field"}
-    LPWFSCDMCASHUNIT *lppList;              // xfs-sst-js:{name:"data.field", ntArray:true}
+    LPWFSCDMCASHUNIT *lppList;              // xfs-sst-js:{name:"data.field", pointer2FixedArray:true, pointer2FixedArrayLength:"p->usCount"}
 } WFSCDMCUINFO, * LPWFSCDMCUINFO;
 // xfs-sst-js:{name:"end"}
 
@@ -516,7 +516,7 @@ typedef struct _wfs_cdm_mix_table
 } WFSCDMMIXTABLE, * LPWFSCDMMIXTABLE;
 // xfs-sst-js:{name:"end"}
 
-// xfs-sst-js:{name:"data", type:"WFSCDMDENOMINATION", codeName:"CdmDenomination", leading:3, output:true, input:false, command:""}
+// xfs-sst-js:{name:"data", type:"WFSCDMDENOMINATION", codeName:"CdmDenomination", leading:3, output:true, input:false, command:"WFS_EXEE_CDM_SUBDISPENSEOK"}
 typedef struct _wfs_cdm_denomination
 {
     CHAR            cCurrencyID[3];                 // xfs-sst-js:{name:"data.field", fixedArrayNNT:true}
@@ -647,17 +647,19 @@ typedef struct _wfs_cdm_calibrate
 /* CDM Message Structures */
 /*=================================================================*/
 
+// xfs-sst-js:{name:"data", type:"WFSCDMCUERROR", codeName:"CdmCashUnitError", leading:3, output:true, input:false, command:"WFS_EXEE_CDM_CASHUNITERROR"}
 typedef struct _wfs_cdm_cu_error
 {
-    WORD              wFailure;
-    LPWFSCDMCASHUNIT  lpCashUnit;
+    WORD              wFailure;			// xfs-sst-js:{name:"data.field"}
+    LPWFSCDMCASHUNIT  lpCashUnit;		// xfs-sst-js:{name:"data.field"}
 } WFSCDMCUERROR, * LPWFSCDMCUERROR;
 // xfs-sst-js:{name:"end"}
 
+// xfs-sst-js:{name:"data", type:"WFSCDMCOUNTSCHANGED", codeName:"CdmCountsChanged", leading:3, output:true, input:false, command:"WFS_SRVE_CDM_COUNTS_CHANGED"}
 typedef struct _wfs_cdm_counts_changed
 {
     USHORT            usCount;
-    USHORT           *lpusCUNumList;
+    USHORT           *lpusCUNumList;	// xfs-sst-js:{name:"data.field", pointer2FixedArray:true, pointer2FixedArrayLength:"p->usCount"}
 } WFSCDMCOUNTSCHANGED, * LPWFSCDMCOUNTSCHANGED;
 // xfs-sst-js:{name:"end"}
 
