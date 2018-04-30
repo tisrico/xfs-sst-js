@@ -58,17 +58,6 @@ typedef struct {
 } WFSIDCRESETCOUNT, *LPWFSIDCRESETCOUNT;
 // xfs-sst-js:{name:"end"}
 
-// xfs-sst-js:{name:"data", type:"WFSIDCCARDDATARAWINPUT", codeName:"IdcWriteRawData", leading:3, output:false, input:true, command:"WFS_CMD_IDC_WRITE_RAW_DATA"}
-typedef struct _wfs_idc_card_data_raw_input
-{
-    WORD            wDataSource;                                  // xfs-sst-js:{name:"data.field"}
-    WORD            wStatus;
-    ULONG           ulDataLength;                                 // xfs-sst-js:{name:"data.field"}
-    LPBYTE          lpbData;                                      // xfs-sst-js:{name:"data.field"}
-    WORD            fwWriteMethod;                                // xfs-sst-js:{name:"data.field"}
-} WFSIDCCARDDATARAWINPUT, * LPWFSIDCCARDDATARAWINPUT;
-// xfs-sst-js:{name:"end"}
-
 // xfs-sst-js:{name:"data", type:"WFSIDCRESETIN", codeName:"IdcReset", leading:3, output:false, input:true, command:"WFS_CMD_IDC_RESET"}
 typedef struct {
 	WORD wResetIn;							// xfs-sst-js:{name:"data.field", defaultValue:"WFS_IDC_EJECT"}

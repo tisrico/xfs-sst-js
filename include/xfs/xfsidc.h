@@ -370,14 +370,24 @@ typedef struct _wfs_idc_chip_power_out
 } WFSIDCCHIPPOWEROUT, * LPWFSIDCCHIPPOWEROUT;
 // xfs-sst-js:{name:"end"}
 
+// xfs-sst-js:{name:"data", type:"WFSIDCCARDDATARAWINPUT", codeName:"IdcWriteRawData", leading:3, output:false, input:true, command:"WFS_CMD_IDC_WRITE_RAW_DATA"}
+typedef struct _wfs_idc_card_data_raw_input
+{
+    WORD            wDataSource;                                  // xfs-sst-js:{name:"data.field"}
+    WORD            wStatus;
+    ULONG           ulDataLength;                                 // xfs-sst-js:{name:"data.field"}
+    LPBYTE          lpbData;                                      // xfs-sst-js:{name:"data.field"}
+    WORD            fwWriteMethod;                                // xfs-sst-js:{name:"data.field"}
+} WFSIDCCARDDATARAWINPUT, * LPWFSIDCCARDDATARAWINPUT;
+// xfs-sst-js:{name:"end"}
+
 // xfs-sst-js:{name:"data", type:"WFSIDCPARSEDATA", codeName:"IdcParseData", leading:3, output:false, input:true, command:"WFS_CMD_IDC_PARSE_DATA"}
 typedef struct _wfs_idc_parse_data
 {
-    LPSTR             lpstrFormName;                            // xfs-sst-js:{name:"data.field", defaultValue:null }
-    LPWFSIDCCARDDATA  *lppCardData;                             // xfs-sst-js:{name:"data.field", ntArray:true, defaultValue:{}} // tbd
+    LPSTR                   lpstrFormName;                            // xfs-sst-js:{name:"data.field", defaultValue:null }
+    LPWFSIDCCARDDATARAWINPUT  *lppCardData;                             // xfs-sst-js:{name:"data.field", ntArray:true, defaultValue:{}}
 } WFSIDCPARSEDATA, * LPWFSIDCPARSEDATA;
 // xfs-sst-js:{name:"end"}
-
 
 /*=================================================================*/
 /* IDC Message Structures */

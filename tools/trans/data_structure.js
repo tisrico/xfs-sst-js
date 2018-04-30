@@ -199,7 +199,7 @@ function data_field (f1, f2, f3) {
 	}
 
 	// char[] should not be treated as array
-	if(this.type == "CHAR" && this.fixedArray) {
+	if((this.type == "CHAR" || this.type == "char") && this.fixedArray) {
 		this.fixedArray = false;
 	}
 
@@ -208,9 +208,14 @@ function data_field (f1, f2, f3) {
 	this.extra = eval(util.format("Object(%s)", f3.slice(spos, epos)));
 	this.jsName = this.csName.replace(/^[a-z]*/, "").uncapitalize();
 
+	this.fixedArrayNNT = false;
+	if(this.extra.hasOwnProperty('fixedArrayNNT')) {
+		this.fixedArrayNNT = this.extra.fixedArrayNNT;
+	}
+
 	this.take_addr = false;
 	if(this.extra.hasOwnProperty('take_addr')) {
-		this. take_addr = this.extra.take_addr;
+		this.take_addr = this.extra.take_addr;
 	}
 
 	this.ntArray = false;
@@ -231,6 +236,26 @@ function data_field (f1, f2, f3) {
 	this.namedArray = false;
 	if(this.extra.hasOwnProperty('namedArray')) {
 		this.namedArray = this.extra.namedArray;
+	}
+
+	this.pointer2FixedArray = false;
+	if(this.extra.hasOwnProperty('pointer2FixedArray')) {
+		this.pointer2FixedArray = this.extra.pointer2FixedArray;
+	}
+
+	this.pointer2FixedArrayLength = false;
+	if(this.extra.hasOwnProperty('pointer2FixedArrayLength')) {
+		this.pointer2FixedArrayLength = this.extra.pointer2FixedArrayLength;
+	}	
+
+	this.fixedArrayPointers = false;
+	if(this.extra.hasOwnProperty('fixedArrayPointers')) {
+		this.fixedArrayPointers = this.extra.fixedArrayPointers;
+	}
+
+	this.fixedArrayPointersLength = false;
+	if(this.extra.hasOwnProperty('fixedArrayPointersLength')) {
+		this.fixedArrayPointersLength = this.extra.fixedArrayPointersLength;
 	}
 
 	this.namedArrayIndex = "";
@@ -590,6 +615,17 @@ exports.data_structure = class {
 			}*/
 
 
+			if(f.fixedArrayNNT) {
+				result += util.format('%s\tj[\"%s\"] = std::string(p->%s, p->%s + %d);\n',
+					condition, f.jsName, f.csName, f.csName, f.arrayLength);
+				return;
+			}
+
+			if(f.pointer2FixedArray) {
+				f.fixedArray = true;
+				f.arrayLength = f.pointer2FixedArrayLength;
+			}			
+
 			if(!f.fixedArray && !f.ntArray && !f.namedArray && !f.ntStringList) {
 				// search if it is a known data type
 				var pds = find_ds(gs, f.type);
@@ -630,8 +666,8 @@ exports.data_structure = class {
 
 			if(f.fixedArray || f.namedArray) {
 				var prefix = "XSJ_ListArray";
-				var mainConverter = "NULL";
-				var indexConverter = "NULL";
+				var mainConverter = "(json(*)(const int))nullptr";
+				var indexConverter = "(std::string(*)(const int))nullptr";
 
 				if(!f.fixedArray) {
 					XSJ_ListArray
@@ -725,6 +761,10 @@ exports.data_structure = class {
 		// fields
 		this.fields.map((f)=>{
 			//console.log(f);
+			if(this.directCopy) {
+				result += f + "\n";
+				return;
+			}
 
 			var condition = util.format('\tif (j.find("%s") != j.end() && !j["%s"].is_null())\n\t', f.jsName, f.jsName);
 
@@ -734,14 +774,35 @@ exports.data_structure = class {
 				return;
 			}
 
+			if(f.pointer2FixedArray) {
+				condition += util.format('\tif(j["%s"].is_array())\n', f.jsName);
+				result += util.format("%s\t\t\tp->%s = a->AllocateArray<%s>(j[\"%s\"], %s);\n\n", 
+					condition, f.csName, f.type.slice(2), f.jsName, f.pointer2FixedArrayLength);
+				return;
+			}
+
+			if(f.fixedArrayPointers) {
+				condition += util.format('\tif(j["%s"].is_array())\n', f.jsName);
+				result += util.format("%s\t\t\tp->%s = a->AllocateArrayPointers<%s>(j[\"%s\"], %s);\n\n", 
+					condition, f.csName, f.type.slice(2), f.jsName, f.fixedArrayPointersLength);
+				return;
+			}
+
+			if(f.ntArray) {
+				condition += util.format('\tif(j["%s"].is_array())\n', f.jsName);
+				result += util.format("%s\t\t\tp->%s = a->AllocateArrayPointersNT<%s>(j[\"%s\"]);\n\n", 
+					condition, f.csName, f.type.slice(2), f.jsName);
+				return;
+			}
+
 			if(!f.fixedArray && !f.ntArray && !f.namedArray && !f.kvGroups) {
 
 				// search if it is a known data structure nested
 				var pds = find_ds(gs, f.type);
 				if(pds) {
 					// convert j[jsName] => f.Type instance
-					result += util.format("%s\tp->%s =  XSJTranslate(j[\"%s\"], nullptr);\n\n",
-						condition, f.csName, f.jsName);
+					result += util.format("%s\tp->%s =  XSJTranslate<%s>(j[\"%s\"], a);\n\n",
+						condition, f.csName, pds.struct, f.jsName);
 					return;
 				}
 

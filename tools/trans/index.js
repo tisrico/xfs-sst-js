@@ -89,9 +89,28 @@ function proc(path) {
 	}
 }
 
+function addDSTranslator(trans) {
+	if(trans.command.indexOf(";") == -1) {
+		gTranslators.push(trans);
+		return;
+	}
+
+	return;
+	
+	let cmds = trans.command.split(";");
+	let x = 1;
+	for(let cmd of cmds) {
+		let cloned = Object.assign({}, trans);
+		cloned.command = cmd;
+		cloned.codeName += x++;
+		gTranslators.push(cloned);
+		break;
+	}
+}
+
 function addTranslator(trans) {
 	if(trans.type != "nc") {
-		gTranslators.push(trans);
+		addDSTranslator(trans);
 		return;
 	}
 

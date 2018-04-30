@@ -314,9 +314,9 @@ public:
 		return nullptr;		
 	}
 
-	template<typename T>
-	T* AllocateArray(const json& j, size_t size) {
-		size = min(size, j.size());
+	template<typename T, typename S>
+	T* AllocateArray(const json& j, S& size) {
+		size = (S) j.size();
 		if(size == 0) {
 			return nullptr;
 		}
@@ -325,6 +325,38 @@ public:
 
 		for(size_t i=0; i<size; i++) {
 			pt[i] =  j[i].get<T>();
+		}
+
+		return pt;
+	}
+
+	template<typename T, typename S>
+	T** AllocateArrayPointers(const json& j, S& size) {
+		size = (S)j.size();
+		if (size == 0) {
+			return nullptr;
+		}
+
+		T** pt = (T**)Get(sizeof(T*)* size);
+
+		for (size_t i = 0; i<size; i++) {
+			pt[i] = XSJTranslate<T>(j[i], this);
+		}
+
+		return pt;
+	}
+
+	template<typename T>
+	T** AllocateArrayPointersNT(const json& j) {
+		auto size = j.size();
+		if (size == 0) {
+			return nullptr;
+		}
+
+		T** pt = (T**)Get(sizeof(T*)* (size+1));
+
+		for (size_t i = 0; i<size; i++) {
+			pt[i] = XSJTranslate<T>(j[i], this);
 		}
 
 		return pt;
