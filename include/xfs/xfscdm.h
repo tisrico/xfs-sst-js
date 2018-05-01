@@ -254,7 +254,7 @@ extern "C" {
 /* values of WFSCDMTELLERDETAILS.fwOutputPosition */
 /* values of WFSCDMPHYSICALCU.fwPosition */
 
-// xfs-sst-js:{name:"nc", bitwise:true, applies:["WFSCDMTELLERDETAILSIN.ulInputPosition", "WFSCDMTELLERDETAILSIN.fwOutputPosition", "WFSCDMCLOSESHUTTER.fwPosition", "WFSCDMPRESENTSTATUSIN.fwPosition", "WFSCDMDISPENSE.fwPosition","WFSCDMCAPS.fwPositions","WFSCDMOUTPOS.fwPosition","WFSCDMTELLERPOS.fwPosition","WFSCDMTELLERDETAILS.fwOutputPosition","WFSCDMPHYSICALCU.fwPosition", "WFSCDMPRESENTPOSITION.fwPosition"], codeName:"XfsCdmDispensePosition"}
+// xfs-sst-js:{name:"nc", bitwise:true, applies:["WFSCDMCLOSESHUTTER.fwPosition", "WFSCDMPRESENTSTATUSIN.fwPosition", "WFSCDMDISPENSE.fwPosition","WFSCDMCAPS.fwPositions","WFSCDMOUTPOS.fwPosition","WFSCDMTELLERPOS.fwPosition","WFSCDMTELLERDETAILS.fwOutputPosition","WFSCDMPHYSICALCU.fwPosition", "WFSCDMPRESENTPOSITION.fwPosition"], codeName:"XfsCdmDispensePosition"}
 #define     WFS_CDM_POSNULL                     (0x0000)
 #define     WFS_CDM_POSLEFT                     (0x0001)
 #define     WFS_CDM_POSRIGHT                    (0x0002)
@@ -285,7 +285,7 @@ extern "C" {
 
 
 /* values of WFSCDMTELLERUPDATE.usAction */
-// xfs-sst-js:{name:"nc", bitwise:true, applies:["WFSCDMTELLERUPDATESETTI.usAction", "WFSCDMTELLERUPDATE.usAction"], codeName:"XfsCdmTellerUpdateAction"}
+// xfs-sst-js:{name:"nc", bitwise:true, applies:["WFSCDMTELLERUPDATE.usAction"], codeName:"XfsCdmTellerUpdateAction"}
 #define     WFS_CDM_CREATE_TELLER               (1)
 #define     WFS_CDM_MODIFY_TELLER               (2)
 #define     WFS_CDM_DELETE_TELLER               (3)
@@ -432,20 +432,29 @@ typedef struct _wfs_cdm_cashunit
 } WFSCDMCASHUNIT, * LPWFSCDMCASHUNIT;
 // xfs-sst-js:{name:"end"}
 
+// xfs-sst-js:{name:"duplica", type:"WFSCDMCASHUNIT", codeName:"CdmCashUnit", leading:3, output:true, input:false, command:"WFS_USRE_CDM_CASHUNITTHRESHOLD"}
+// xfs-sst-js:{name:"end"}
+
 // xfs-sst-js:{name:"data", type:"WFSCDMCUINFO", codeName:"CdmCashUnitInfo", leading:3, output:true, input:false, command:"WFS_INF_CDM_CASH_UNIT_INFO"}
 typedef struct _wfs_cdm_cu_info
 {
-    USHORT          usTellerID;             // xfs-sst-js:{name:"data.field"}
+    USHORT          usTellerID;             // xfs-sst-js:{name:"data.field", defaultValue:0}
     USHORT          usCount;                // xfs-sst-js:{name:"data.field"}
-    LPWFSCDMCASHUNIT *lppList;              // xfs-sst-js:{name:"data.field", pointer2FixedArray:true, pointer2FixedArrayLength:"p->usCount"}
+    LPWFSCDMCASHUNIT *lppList;              // xfs-sst-js:{name:"data.field", defaultValue:[], fixedArrayPointers:true, fixedArrayPointersLength:"p->usCount"}
 } WFSCDMCUINFO, * LPWFSCDMCUINFO;
 // xfs-sst-js:{name:"end"}
 
-typedef struct _wfs_cdm_teller_info_
-{
-    USHORT          usTellerID;
-    CHAR            cCurrencyID[3];
-} WFSCDMTELLERINFO_, * LPWFSCDMTELLERINFO_;
+// xfs-sst-js:{name:"duplica", type:"WFSCDMCUINFO", codeName:"CdmCashUnitInfo", leading:3, output:false, input:true, command:"WFS_CMD_CDM_SET_CASH_UNIT_INFO"}
+// xfs-sst-js:{name:"end"}
+
+// xfs-sst-js:{name:"duplica", type:"WFSCDMCUINFO", codeName:"CdmCashUnitInfo", leading:3, output:false, input:true, command:"WFS_CMD_CDM_START_EXCHANGE"}
+// xfs-sst-js:{name:"end"}
+
+// xfs-sst-js:{name:"duplica", type:"WFSCDMCUINFO", codeName:"CdmCashUnitInfo", leading:3, output:false, input:true, command:"WFS_CMD_CDM_END_EXCHANGE"}
+// xfs-sst-js:{name:"end"}
+
+// xfs-sst-js:{name:"duplica", type:"WFSCDMCUINFO", codeName:"CdmCashUnitInfo", leading:3, output:true, input:false, command:"WFS_CMD_CDM_TEST_CASH_UNITS"}
+// xfs-sst-js:{name:"end"}
 
 // xfs-sst-js:{name:"data", type:"WFSCDMTELLERINFO", codeName:"CdmTellerInfo", leading:3, output:false, input:true, command:"WFS_INF_CDM_TELLER_INFO"}
 typedef struct _wfs_cdm_teller_info
@@ -455,10 +464,10 @@ typedef struct _wfs_cdm_teller_info
 } WFSCDMTELLERINFO, * LPWFSCDMTELLERINFO;
 // xfs-sst-js:{name:"end"}
 
-// xfs-sst-js:{name:"data", type:"WFSCDMTELLERTOTALS", codeName:"CdmTellerTotal", leading:3, output:true, input:false, command:""}
+// xfs-sst-js:{name:"data", type:"WFSCDMTELLERTOTALS", codeName:"CdmTellerTotal", leading:3, output:true, input:true, command:""}
 typedef struct _wfs_cdm_teller_totals
 {
-   char             cCurrencyID[3];                 // xfs-sst-js:{name:"data.field", fixedArrayNNT:true}
+   __CHARRAY        cCurrencyID[3];                 // xfs-sst-js:{name:"data.field", fixedArrayNNT:true, fixedArray:true, arrayLength:3}
    ULONG            ulItemsReceived;                // xfs-sst-js:{name:"data.field"}
    ULONG            ulItemsDispensed;               // xfs-sst-js:{name:"data.field"}
    ULONG            ulCoinsReceived;                // xfs-sst-js:{name:"data.field"}
@@ -471,11 +480,14 @@ typedef struct _wfs_cdm_teller_totals
 // xfs-sst-js:{name:"data", type:"WFSCDMTELLERDETAILS", codeName:"CdmTellerDetails", leading:3, output:true, input:false, command:"WFS_INF_CDM_TELLER_INFO"}
 typedef struct _wfs_cdm_teller_details
 {
-    USHORT                usTellerID;                   // xfs-sst-js:{name:"data.field"}
-    ULONG                 ulInputPosition;              // xfs-sst-js:{name:"data.field"}
-    WORD                  fwOutputPosition;             // xfs-sst-js:{name:"data.field"}
-    LPWFSCDMTELLERTOTALS *lppTellerTotals;              // xfs-sst-js:{name:"data.field", ntArray:true}
+    USHORT                usTellerID;                   // xfs-sst-js:{name:"data.field", defaultValue:0}
+    ULONG                 ulInputPosition;              // xfs-sst-js:{name:"data.field", defaultValue:"WFS_CDM_POSNULL"}
+    WORD                  fwOutputPosition;             // xfs-sst-js:{name:"data.field", defaultValue:"WFS_CDM_POSNULL"}
+    LPWFSCDMTELLERTOTALS *lppTellerTotals;              // xfs-sst-js:{name:"data.field", ntArray:true, defaultValue:[]}
 } WFSCDMTELLERDETAILS, * LPWFSCDMTELLERDETAILS;
+// xfs-sst-js:{name:"end"}
+
+// xfs-sst-js:{name:"duplica", type:"WFSCDMTELLERDETAILS", codeName:"CdmTellerDetails", leading:3, output:false, input:true, command:""}
 // xfs-sst-js:{name:"end"}
 
 // xfs-sst-js:{name:"data", type:"WFSCDMCURRENCYEXP", codeName:"CdmCurrencyExp", leading:3, output:true, input:false, command:"WFS_INF_CDM_CURRENCY_EXP"}
@@ -507,13 +519,16 @@ typedef struct _wfs_cdm_mix_row
 // xfs-sst-js:{name:"data", type:"WFSCDMMIXTABLE", codeName:"CdmMixTable", leading:3, output:true, input:false, command:"WFS_INF_CDM_MIX_TABLE"}
 typedef struct _wfs_cdm_mix_table
 {
-    USHORT          usMixNumber;                    // xfs-sst-js:{name:"data.field"}
-    LPSTR           lpszName;                       // xfs-sst-js:{name:"data.field"}
-    USHORT          usRows;                         // xfs-sst-js:{name:"data.field"}
-    USHORT          usCols;                         // xfs-sst-js:{name:"data.field"}
-    LPULONG         lpulMixHeader;                  // xfs-sst-js:{name:"data.field", fixedArrayPointers:true, fixedArrayPointersLength:"p->usCols"}
-    LPWFSCDMMIXROW  *lppMixRows;                    // xfs-sst-js:{name:"data.field", ntArray:true}
+    USHORT          usMixNumber;                    // xfs-sst-js:{name:"data.field", defaultValue:0}
+    LPSTR           lpszName;                       // xfs-sst-js:{name:"data.field", defaultValue:null}
+    USHORT          usRows;                         // xfs-sst-js:{name:"data.field", defaultValue:0}
+    USHORT          usCols;                         // xfs-sst-js:{name:"data.field", defaultValue:0}
+    LPULONG         lpulMixHeader;                  // xfs-sst-js:{name:"data.field", pointer2FixedArray:true, pointer2FixedArrayLength:"p->usCols", defaultValue:[]}
+    LPWFSCDMMIXROW  *lppMixRows;                    // xfs-sst-js:{name:"data.field", ntArray:true, defaultValue:[]}
 } WFSCDMMIXTABLE, * LPWFSCDMMIXTABLE;
+// xfs-sst-js:{name:"end"}
+
+// xfs-sst-js:{name:"duplica", type:"WFSCDMMIXTABLE", codeName:"CdmMixTable", leading:3, output:false, input:true, command:"WFS_CMD_CDM_SET_MIX_TABLE"}
 // xfs-sst-js:{name:"end"}
 
 // xfs-sst-js:{name:"data", type:"WFSCDMDENOMINATION", codeName:"CdmDenomination", leading:3, output:true, input:false, command:"WFS_EXEE_CDM_SUBDISPENSEOK"}
@@ -525,6 +540,12 @@ typedef struct _wfs_cdm_denomination
     LPULONG         lpulValues;                     // xfs-sst-js:{name:"data.field", fixedArrayPointers:true, fixedArrayPointersLength:"p->usCount"}
     ULONG           ulCashBox;                      // xfs-sst-js:{name:"data.field"}
 } WFSCDMDENOMINATION, * LPWFSCDMDENOMINATION;
+// xfs-sst-js:{name:"end"}
+
+// xfs-sst-js:{name:"duplica", type:"WFSCDMDENOMINATION", codeName:"CdmDenomination", leading:3, output:true, input:false, command:"WFS_CMD_CDM_DISPENSE"}
+// xfs-sst-js:{name:"end"}
+
+// xfs-sst-js:{name:"duplica", type:"WFSCDMDENOMINATION", codeName:"CdmDenomination", leading:3, output:true, input:false, command:"WFS_EXEE_CDM_INCOMPLETEDISPENSE"}
 // xfs-sst-js:{name:"end"}
 
 // xfs-sst-js:{name:"data", type:"WFSCDMDENOMINATIONIN", codeName:"CdmDenominationIn", leading:3, output:false, input:true, command:""}
@@ -608,11 +629,13 @@ typedef struct _wfs_cdm_retract
 } WFSCDMRETRACT, * LPWFSCDMRETRACT;
 // xfs-sst-js:{name:"end"}
 
+// xfs-sst-js:{name:"data", type:"WFSCDMTELLERUPDATE", codeName:"CdmUpdateTellorInfo", leading:3, output:false, input:true, command:"WFS_CMD_CDM_SET_TELLER_INFO"}
 typedef struct _wfs_cdm_teller_update
 {
-    USHORT                usAction;
-    LPWFSCDMTELLERDETAILS lpTellerDetails;
+    USHORT                usAction;				// xfs-sst-js:{name:"data.field", defaultValue:"WFS_CDM_CREATE_TELLER"}
+    LPWFSCDMTELLERDETAILS lpTellerDetails;		// xfs-sst-js:{name:"data.field", defaultValue:{}}
 } WFSCDMTELLERUPDATE, * LPWFSCDMTELLERUPDATE;
+// xfs-sst-js:{name:"end"}
 
 // xfs-sst-js:{name:"data", type:"WFSCDMSTARTEX", codeName:"CdmStartEx", leading:3, output:false, input:true, command:"WFS_CMD_CDM_START_EXCHANGE"}
 typedef struct _wfs_cdm_start_ex
@@ -632,6 +655,10 @@ typedef struct _wfs_cdm_itemposition
     WORD               fwOutputPosition;		// xfs-sst-js:{name:"data.field", defaultValue:"WFS_CDM_POSNULL"}
 } WFSCDMITEMPOSITION, * LPWFSCDMITEMPOSITION;
 // xfs-sst-js:{name:"end"}
+
+// xfs-sst-js:{name:"duplica", type:"WFSCDMITEMPOSITION", codeName:"CdmReset", leading:3, output:false, input:true, command:"WFS_CMD_CDM_TEST_CASH_UNITS"}
+// xfs-sst-js:{name:"end"}
+
 
 // xfs-sst-js:{name:"data", type:"WFSCDMCALIBRATE", codeName:"CdmPresentStatus", leading:3, output:true, input:false, command:"WFS_INF_CDM_PRESENT_STATUS"}
 typedef struct _wfs_cdm_calibrate

@@ -640,6 +640,11 @@ exports.data_structure = class {
 				f.arrayLength = f.pointer2FixedArrayLength;
 			}			
 
+			if(f.fixedArrayPointers) {
+				f.fixedArray = true;
+				f.arrayLength = f.fixedArrayPointersLength;
+			}
+
 			if(!f.fixedArray && !f.ntArray && !f.namedArray && !f.ntStringList) {
 				// search if it is a known data type
 				var pds = find_ds(gs, f.type);
