@@ -352,7 +352,7 @@ extern "C" {
 // xfs-sst-js:{name:"end"}
 
 /* values of WFSPTRFIELDFAIL.wFailure */
-// xfs-sst-js:{name:"nc", bitwise:false, applies:["WFSPTRFIELDFAIL.wFailure, WFSPTRFIELDWARNING.wFailure"], codeName:"XfsPtrFormFieldFailure"}
+// xfs-sst-js:{name:"nc", bitwise:false, applies:["WFSPTRFIELDFAIL.wFailure"], codeName:"XfsPtrFormFieldFailure"}
 #define    WFS_PTR_FIELDREQUIRED            (0)
 #define    WFS_PTR_FIELDSTATICOVWR          (1)
 #define    WFS_PTR_FIELDOVERFLOW            (2)
@@ -668,6 +668,9 @@ typedef struct _wfs_ptr_field_failure
     LPSTR           lpszFieldName;                      // xfs-sst-js:{name:"data.field"}
     WORD            wFailure;                           // xfs-sst-js:{name:"data.field"}
 } WFSPTRFIELDFAIL, * LPWFSPTRFIELDFAIL;
+// xfs-sst-js:{name:"end"}
+
+// xfs-sst-js:{name:"duplica", type:"WFSPTRFIELDFAIL", codeName:"PtrFieldFailure", leading:3, output:true, input:false, command:"WFS_EXEE_PTR_FIELDWARNING"}
 // xfs-sst-js:{name:"end"}
 
 // xfs-sst-js:{name:"data", type:"WFSPTRBINTHRESHOLD", codeName:"PtrBinThreshold", leading:3, output:true, input:false, command:"WFS_USRE_PTR_RETRACTBINTHRESHOLD"}

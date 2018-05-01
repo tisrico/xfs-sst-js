@@ -147,7 +147,7 @@ extern "C" {
 // xfs-sst-js:{name:"end"}
 
 /* values of WFSIDCCAPS.fwChipProtocols */
-// xfs-sst-js:{name:"nc", bitwise:true, applies:["WFSIDCCAPS.fwChipProtocols", "WFSIDCCHIPIO.wChipProtocol", "WFSIDCCHIPIOOUT.wChipProtocol"], codeName:"XfsIdcChipProtocol"}
+// xfs-sst-js:{name:"nc", bitwise:true, applies:["WFSIDCCAPS.fwChipProtocols", "WFSIDCCHIPIO.wChipProtocol"], codeName:"XfsIdcChipProtocol"}
 #define     WFS_IDC_CHIPT0                      0x0001
 #define     WFS_IDC_CHIPT1                      0x0002
 #define     WFS_IDC_CHIPT2                      0x0004
