@@ -35,7 +35,7 @@ exports.trans_section = class {
 				if(this.markup.name == "nc") {
 					return new named_code(this);
 				}
-				else if(this.markup.name == "data") {
+				else if(this.markup.name == "data" || this.markup.name=="duplica") {
 					return new data_structure(this);
 				}
 				return;

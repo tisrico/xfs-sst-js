@@ -447,7 +447,7 @@ exports.data_structure = class {
 		}
 	}
 
-	generate(gs, run) {
+	generate(gs, run, records) {
 		if("js" == run) {
 			return this.jspace();
 		}
@@ -460,12 +460,26 @@ exports.data_structure = class {
 			return header();
 		}
 
-		var result = this.toJson(gs);
-		result += this.fromJson(gs);
+		let r1 = "";
+		let r2 = "";
 
-		//result += this.translators(gs);
+		if(!records.output.hasOwnProperty(this.struct)) {
+			r1 = this.toJson(gs);
+		}
 
-		return result;
+		if(!records.input.hasOwnProperty(this.struct)) {
+			r2 = this.fromJson(gs);
+		}
+
+		if(r1) {
+			records.output[this.struct] = true;
+		}
+
+		if(r2) {
+			records.input[this.struct] = true;
+		}
+
+		return r1 + r2;
 	}
 
 	jspace(gs) {
@@ -500,7 +514,7 @@ exports.data_structure = class {
 		return result;
 	}
 
-	makeTranslators(gs) {
+	makeTranslatorTable(gs) {
 		var result = "";
 		result += "inline Translator* GetTranslators(int& size) {\n";
 		result += "\tstatic Translator transators[] = {\n";

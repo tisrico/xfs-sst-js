@@ -1,6 +1,6 @@
 {
-  "name": "node-windows",
-  "version": "1.0.0",
+  "name": "xfs-js",
+  "version": "0.0.1",
   "description": "",
   "main": "index.js",
   "scripts": {

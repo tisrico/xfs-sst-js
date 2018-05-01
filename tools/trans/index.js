@@ -32,14 +32,15 @@ files.map((item)=> {
 		});
 
 		// data structure translators
+		let records = {input:{}, output:{}};
 		gTranslators.map((item)=>{
-			var out = item.generate(gTranslators, "data");
+			var out = item.generate(gTranslators, "data", records);
 			if(out) {
 				console.log(out);
 			}		
 		});
 
-		console.log(new data_structure().makeTranslators(gTranslators));
+		console.log(new data_structure().makeTranslatorTable(gTranslators));
 		console.log(endCSpace());
 		return;
 	}
@@ -90,21 +91,23 @@ function proc(path) {
 }
 
 function addDSTranslator(trans) {
-	if(trans.command.indexOf(";") == -1) {
+	if(trans.type == "data") {
 		gTranslators.push(trans);
 		return;
 	}
 
-	return;
-	
-	let cmds = trans.command.split(";");
-	let x = 1;
-	for(let cmd of cmds) {
-		let cloned = Object.assign({}, trans);
-		cloned.command = cmd;
-		cloned.codeName += x++;
-		gTranslators.push(cloned);
-		break;
+	// assert trans.type == "duplica"
+	for(let t of gTranslators) {
+		if(t.type == "data" && t.struct == trans.struct && t.name == trans.name) {
+
+			t.fields.map((f)=>{
+				trans.fields.push(f);
+			});
+
+			trans.type = "data";
+			gTranslators.push(trans);
+			break;
+		}
 	}
 }
 
